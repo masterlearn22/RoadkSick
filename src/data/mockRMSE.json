@@ -1,0 +1,82 @@
+[
+  {
+    "id": "RMSE-001",
+    "detectionId": "DET-001",
+    "system": { "lat": -6.921453, "lng": 107.610542 },
+    "groundTruth": { "lat": -6.921478, "lng": 107.610565 },
+    "distance": 3.79,
+    "distanceSquared": 14.3641
+  },
+  {
+    "id": "RMSE-002",
+    "detectionId": "DET-002",
+    "system": { "lat": -6.917524, "lng": 107.609815 },
+    "groundTruth": { "lat": -6.917548, "lng": 107.609838 },
+    "distance": 3.69,
+    "distanceSquared": 13.6161
+  },
+  {
+    "id": "RMSE-003",
+    "detectionId": "DET-003",
+    "system": { "lat": -6.892145, "lng": 107.610231 },
+    "groundTruth": { "lat": -6.892170, "lng": 107.610255 },
+    "distance": 3.86,
+    "distanceSquared": 14.8996
+  },
+  {
+    "id": "RMSE-004",
+    "detectionId": "DET-004",
+    "system": { "lat": -6.945821, "lng": 107.605412 },
+    "groundTruth": { "lat": -6.945842, "lng": 107.605436 },
+    "distance": 3.49,
+    "distanceSquared": 12.1801
+  },
+  {
+    "id": "RMSE-005",
+    "detectionId": "DET-005",
+    "system": { "lat": -6.898741, "lng": 107.603892 },
+    "groundTruth": { "lat": -6.898763, "lng": 107.603914 },
+    "distance": 3.44,
+    "distanceSquared": 11.8336
+  },
+  {
+    "id": "RMSE-006",
+    "detectionId": "DET-006",
+    "system": { "lat": -6.899812, "lng": 107.590123 },
+    "groundTruth": { "lat": -6.899839, "lng": 107.590148 },
+    "distance": 4.09,
+    "distanceSquared": 16.7281
+  },
+  {
+    "id": "RMSE-007",
+    "detectionId": "DET-007",
+    "system": { "lat": -6.887412, "lng": 107.615234 },
+    "groundTruth": { "lat": -6.887435, "lng": 107.615259 },
+    "distance": 3.79,
+    "distanceSquared": 14.3641
+  },
+  {
+    "id": "RMSE-008",
+    "detectionId": "DET-008",
+    "system": { "lat": -6.884123, "lng": 107.612456 },
+    "groundTruth": { "lat": -6.884149, "lng": 107.612481 },
+    "distance": 4.02,
+    "distanceSquared": 16.1604
+  },
+  {
+    "id": "RMSE-009",
+    "detectionId": "DET-009",
+    "system": { "lat": -6.912345, "lng": 107.611234 },
+    "groundTruth": { "lat": -6.912371, "lng": 107.611258 },
+    "distance": 3.96,
+    "distanceSquared": 15.6816
+  },
+  {
+    "id": "RMSE-010",
+    "detectionId": "DET-010",
+    "system": { "lat": -6.920145, "lng": 107.592312 },
+    "groundTruth": { "lat": -6.920168, "lng": 107.592336 },
+    "distance": 3.65,
+    "distanceSquared": 13.3225
+  }
+]

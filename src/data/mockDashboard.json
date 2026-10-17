@@ -1,0 +1,136 @@
+{
+  "totalDetections": 127,
+  "byType": {
+    "pothole": 45,
+    "longitudinal_crack": 32,
+    "alligator_crack": 25,
+    "rutting": 15,
+    "patches": 10
+  },
+  "bySeverity": {
+    "high": 42,
+    "medium": 55,
+    "low": 30
+  },
+  "monthlyTrend": [
+    {
+      "month": "Mei",
+      "pothole": 6,
+      "crack": 8,
+      "rutting": 2,
+      "patches": 1
+    },
+    {
+      "month": "Jun",
+      "pothole": 7,
+      "crack": 9,
+      "rutting": 3,
+      "patches": 2
+    },
+    {
+      "month": "Jul",
+      "pothole": 8,
+      "crack": 10,
+      "rutting": 2,
+      "patches": 2
+    },
+    {
+      "month": "Agu",
+      "pothole": 9,
+      "crack": 11,
+      "rutting": 3,
+      "patches": 1
+    },
+    {
+      "month": "Sep",
+      "pothole": 7,
+      "crack": 9,
+      "rutting": 2,
+      "patches": 2
+    },
+    {
+      "month": "Okt",
+      "pothole": 8,
+      "crack": 10,
+      "rutting": 3,
+      "patches": 2
+    }
+  ],
+  "recentDetections": [
+    {
+      "id": "DET-001",
+      "type": "pothole",
+      "confidence": 0.94,
+      "severity": "high",
+      "bbox": { "x": 140, "y": 280, "width": 85, "height": 60 },
+      "coordinates": {
+        "system": { "lat": -6.921453, "lng": 107.610542 },
+        "groundTruth": { "lat": -6.921478, "lng": 107.610565 }
+      },
+      "location": "Jl. Asia Afrika",
+      "timestamp": "2024-10-02T08:15:30.000Z",
+      "mode": "realtime",
+      "imageUrl": null
+    },
+    {
+      "id": "DET-002",
+      "type": "longitudinal_crack",
+      "confidence": 0.88,
+      "severity": "medium",
+      "bbox": { "x": 210, "y": 190, "width": 120, "height": 45 },
+      "coordinates": {
+        "system": { "lat": -6.917524, "lng": 107.609815 },
+        "groundTruth": { "lat": -6.917548, "lng": 107.609838 }
+      },
+      "location": "Jl. Braga",
+      "timestamp": "2024-10-03T09:42:15.000Z",
+      "mode": "video",
+      "imageUrl": null
+    },
+    {
+      "id": "DET-003",
+      "type": "alligator_crack",
+      "confidence": 0.82,
+      "severity": "medium",
+      "bbox": { "x": 95, "y": 310, "width": 140, "height": 95 },
+      "coordinates": {
+        "system": { "lat": -6.892145, "lng": 107.610231 },
+        "groundTruth": { "lat": -6.892170, "lng": 107.610255 }
+      },
+      "location": "Jl. Dago",
+      "timestamp": "2024-10-04T11:20:00.000Z",
+      "mode": "image",
+      "imageUrl": null
+    },
+    {
+      "id": "DET-004",
+      "type": "rutting",
+      "confidence": 0.78,
+      "severity": "low",
+      "bbox": { "x": 180, "y": 240, "width": 110, "height": 130 },
+      "coordinates": {
+        "system": { "lat": -6.945821, "lng": 107.605412 },
+        "groundTruth": { "lat": -6.945842, "lng": 107.605436 }
+      },
+      "location": "Jl. Moh. Toha",
+      "timestamp": "2024-10-05T13:05:40.000Z",
+      "mode": "realtime",
+      "imageUrl": null
+    },
+    {
+      "id": "DET-005",
+      "type": "patches",
+      "confidence": 0.76,
+      "severity": "low",
+      "bbox": { "x": 250, "y": 290, "width": 130, "height": 80 },
+      "coordinates": {
+        "system": { "lat": -6.898741, "lng": 107.603892 },
+        "groundTruth": { "lat": -6.898763, "lng": 107.603914 }
+      },
+      "location": "Jl. Cihampelas",
+      "timestamp": "2024-10-06T14:50:12.000Z",
+      "mode": "video",
+      "imageUrl": null
+    }
+  ]
+}
