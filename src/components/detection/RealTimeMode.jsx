@@ -33,8 +33,8 @@ const RealTimeMode = () => {
   const [fps, setFps] = useState(29.1);
   const [isSaved, setIsSaved] = useState(false);
   const [currentCoords, setCurrentCoords] = useState({
-    lat: -6.91746,
-    lng: 107.61912,
+    lat: -7.4664,
+    lng: 112.4338,
   });
   const [showLogMobile, setShowLogMobile] = useState(false);
 
@@ -53,7 +53,7 @@ const RealTimeMode = () => {
           (0.78 + Math.random() * (0.98 - 0.78)).toFixed(2)
         );
 
-        // 2. Simulated GPS movement around Bandung coordinates (-6.917 ± 0.006)
+        // 2. Simulated GPS movement around corridor coordinates (-7.4664 ± 0.0006)
         const deltaLat = (Math.random() - 0.48) * 0.0006;
         const deltaLng = (Math.random() - 0.48) * 0.0006;
         const newLat = parseFloat((currentCoords.lat + deltaLat).toFixed(6));
@@ -218,7 +218,7 @@ const RealTimeMode = () => {
                 <Radio className={`w-7 h-7 ${isActive ? 'text-emerald-400 animate-pulse' : 'text-slate-400'}`} />
               </div>
               <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                Kamera Inspeksi Dashcam (Bandung)
+                Kamera Inspeksi Dashcam (Surabaya – Mojokerto)
               </h4>
               <p className="text-[11px] sm:text-xs text-slate-300/80 mt-0.5 max-w-xs mx-auto">
                 {isActive

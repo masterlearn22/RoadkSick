@@ -69,17 +69,17 @@ export const calculateRMSE = (points = []) => {
 };
 
 /**
- * Generate mock RMSE test points with system and ground truth coordinates around Bandung
+ * Generate mock RMSE test points with system and ground truth coordinates along Surabaya - Mojokerto - Jombang
  * @param {number} count
  * @param {number} baseLat
  * @param {number} baseLng
  * @returns {Array<Object>}
  */
-export const generateMockRMSEData = (count = 10, baseLat = -6.917, baseLng = 107.619) => {
+export const generateMockRMSEData = (count = 10, baseLat = -7.4664, baseLng = 112.4338) => {
   const data = [];
 
   for (let i = 1; i <= count; i++) {
-    // Generate system coordinate around Bandung (+/- 0.02 deg)
+    // Generate system coordinate around Surabaya-Mojokerto corridor (+/- 0.02 deg)
     const sysLat = Number((baseLat + (Math.random() - 0.5) * 0.04).toFixed(6));
     const sysLng = Number((baseLng + (Math.random() - 0.5) * 0.04).toFixed(6));
 

@@ -3,19 +3,21 @@ import * as mockApi from './mockApi';
 import * as supabaseApi from './supabaseService';
 
 // Determine which service to use:
-// 1. VITE_USE_MOCK=true -> mockApi (default for development)
-// 2. VITE_USE_MOCK=false -> supabaseApi (requires valid Supabase credentials)
-// 3. Fallback: if Supabase credentials missing, fall back to mockApi
-const USE_MOCK =
-  import.meta.env.VITE_USE_MOCK === undefined
-    ? true
-    : import.meta.env.VITE_USE_MOCK === 'true';
+// 1. VITE_USE_MOCK=true -> mockApi (hanya jika eksplisit diaktifkan)
+// 2. Default -> supabaseApi (terhubung langsung ke Supabase Cloud)
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://tribbxygkdjvnlvbcgtw.supabase.co';
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_uHh07M4yfylS9Glysokyew_3yndMQ2s';
 
 const hasSupabaseCredentials =
-  import.meta.env.VITE_SUPABASE_URL &&
-  import.meta.env.VITE_SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' &&
-  import.meta.env.VITE_SUPABASE_ANON_KEY &&
-  import.meta.env.VITE_SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+  Boolean(supabaseUrl) &&
+  supabaseUrl !== 'https://YOUR_PROJECT_ID.supabase.co' &&
+  supabaseUrl !== 'https://placeholder.supabase.co' &&
+  Boolean(supabaseAnonKey) &&
+  supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY';
 
 let service;
 if (USE_MOCK) {

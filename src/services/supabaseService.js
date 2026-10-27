@@ -219,21 +219,66 @@ export async function getAllDetections(filters = {}) {
 export async function getDashboardStats() {
   const { data: damages, error } = await supabase
     .from('road_damages')
-    .select('damage_type, severity, route_segment, confidence, created_at');
+    .select('id, damage_type, severity, route_segment, road_name, latitude, longitude, confidence, created_at, captured_at')
+    .order('created_at', { ascending: false });
 
   if (error) throw new Error(`Gagal mengambil stats: ${error.message}`);
 
-  const byType = {};
-  const bySeverity = {};
+  const byType = {
+    longitudinal_crack: 0,
+    alligator_crack: 0,
+    pothole: 0,
+    rutting: 0,
+    patches: 0,
+  };
+  const bySeverity = {
+    berat: 0,
+    sedang: 0,
+    ringan: 0,
+  };
   const bySegment = {};
 
   for (const d of damages || []) {
-    byType[d.damage_type] = (byType[d.damage_type] || 0) + 1;
-    bySeverity[d.severity] = (bySeverity[d.severity] || 0) + 1;
+    const t = d.damage_type;
+    byType[t] = (byType[t] || 0) + 1;
+    const s = d.severity || 'sedang';
+    bySeverity[s] = (bySeverity[s] || 0) + 1;
     if (d.route_segment) {
       bySegment[d.route_segment] = (bySegment[d.route_segment] || 0) + 1;
     }
   }
+
+  // Monthly trend calculation
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const monthlyMap = {};
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const mName = months[d.getMonth()];
+    monthlyMap[mName] = {
+      month: mName,
+      longitudinal_crack: 0,
+      alligator_crack: 0,
+      rutting: 0,
+      patches: 0,
+      pothole: 0,
+      total: 0,
+    };
+  }
+
+  for (const d of damages || []) {
+    const date = new Date(d.captured_at || d.created_at || now);
+    const mName = months[date.getMonth()];
+    if (monthlyMap[mName]) {
+      const type = d.damage_type;
+      if (monthlyMap[mName][type] !== undefined) {
+        monthlyMap[mName][type] += 1;
+      }
+      monthlyMap[mName].total += 1;
+    }
+  }
+
+  const monthlyTrend = Object.values(monthlyMap);
 
   // Get latest RMSE
   const { data: rmseData } = await supabase
@@ -253,13 +298,20 @@ export async function getDashboardStats() {
       byType,
       bySeverity,
       bySegment,
+      monthlyTrend,
       rmseLatest,
-      recentDetections: (damages || []).slice(0, 5).map((d) => ({
+      recentDetections: (damages || []).slice(0, 10).map((d) => ({
         id: d.id,
         type: d.damage_type,
         confidence: d.confidence,
         severity: d.severity,
-        timestamp: d.created_at,
+        location: d.road_name || d.route_segment || 'Koridor Surabaya - Mojokerto - Jombang',
+        roadName: d.road_name,
+        route_segment: d.route_segment,
+        coordinates: {
+          system: { lat: d.latitude, lng: d.longitude },
+        },
+        timestamp: d.captured_at || d.created_at,
       })),
     },
   };

@@ -7,10 +7,7 @@ const useAppStore = create((set) => ({
   // State
   sidebarOpen: true,
   currentPage: 'dashboard',
-  isMockMode:
-    import.meta.env.VITE_USE_MOCK === undefined
-      ? true
-      : import.meta.env.VITE_USE_MOCK === 'true',
+  isMockMode: import.meta.env.VITE_USE_MOCK === 'true',
   notifications: [],
 
   // Actions

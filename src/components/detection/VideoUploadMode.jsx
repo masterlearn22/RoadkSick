@@ -20,9 +20,9 @@ import DetectionSummary from './DetectionSummary';
 const VideoUploadMode = () => {
   const [viewState, setViewState] = useState('upload'); // 'upload' | 'processing' | 'result'
   const [selectedFile, setSelectedFile] = useState(null);
-  const [latitude, setLatitude] = useState('-6.91746');
-  const [longitude, setLongitude] = useState('107.61912');
-  const [notes, setNotes] = useState('Survei Jalur Utama Jl. Ir. H. Juanda Bandung');
+  const [latitude, setLatitude] = useState('-7.4664');
+  const [longitude, setLongitude] = useState('112.4338');
+  const [notes, setNotes] = useState('Survei Jalur Koridor Surabaya – Mojokerto – Jombang');
 
   // Processing state variables
   const [progress, setProgress] = useState(0);
@@ -208,7 +208,7 @@ const VideoUploadMode = () => {
               Inferensi YOLOv8 Berjalan...
             </h3>
             <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-mono truncate max-w-sm mx-auto">
-              {selectedFile?.name || 'dashcam_bandung_route.mp4'}
+              {selectedFile?.name || 'dashcam_surabaya_mojokerto.mp4'}
             </p>
           </div>
 

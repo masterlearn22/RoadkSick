@@ -64,16 +64,30 @@ const Topbar = () => {
 
       {/* Right side: Mock simulation pill & Profile avatar */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        {isMockMode && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-2xs">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="hidden sm:inline">Simulasi Aktif</span>
-            <span className="sm:hidden">Mock</span>
-          </div>
-        )}
+        <div
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+            isMockMode
+              ? 'bg-amber-50 text-amber-700 border border-amber-200/90'
+              : 'bg-emerald-50 text-emerald-700 border border-emerald-200/90'
+          } shadow-2xs`}
+        >
+          <span className="relative flex h-2 w-2">
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                isMockMode ? 'bg-amber-400' : 'bg-emerald-400'
+              } opacity-75`}
+            ></span>
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                isMockMode ? 'bg-amber-500' : 'bg-emerald-500'
+              }`}
+            ></span>
+          </span>
+          <span className="hidden sm:inline">
+            {isMockMode ? 'Mode Simulasi' : 'Supabase Live'}
+          </span>
+          <span className="sm:hidden">{isMockMode ? 'Mock' : 'Live'}</span>
+        </div>
 
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">

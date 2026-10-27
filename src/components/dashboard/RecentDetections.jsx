@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Percent, CheckCircle2 } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import Card from '../common/Card';
 import Badge from '../common/Badge';
 import { getDashboardStats } from '../../services';
 import { formatRelativeTime, formatCoordinate } from '../../utils/formatters';
 import { DAMAGE_TYPES } from '../../data/damageTypes';
 
-const RecentDetections = ({ className = '' }) => {
-  const [recentList, setRecentList] = useState([]);
-  const [loading, setLoading] = useState(true);
+const RecentDetections = ({ recentDetections: propRecent, loading: propLoading, className = '' }) => {
+  const [recentList, setRecentList] = useState(propRecent || []);
+  const [loading, setLoading] = useState(propRecent ? false : true);
 
   useEffect(() => {
+    if (propRecent) {
+      setRecentList(propRecent);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     const loadRecent = async () => {
       try {
         const response = await getDashboardStats();
         if (isMounted && response?.success && response.data?.recentDetections) {
-          setRecentList(response.data.recentDetections.slice(0, 5));
+          setRecentList(response.data.recentDetections);
         }
       } catch (err) {
         console.error('Failed to load recent detections:', err);
@@ -29,12 +35,14 @@ const RecentDetections = ({ className = '' }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [propRecent]);
+
+  const isLoading = propLoading !== undefined ? propLoading : loading;
 
   const renderCoordinates = (coords) => {
     if (!coords) return '-';
-    let lat = -6.917;
-    let lng = 107.619;
+    let lat = null;
+    let lng = null;
     if (coords.system) {
       lat = coords.system.lat;
       lng = coords.system.lng;
@@ -45,19 +53,28 @@ const RecentDetections = ({ className = '' }) => {
       lat = coords.lat;
       lng = coords.lng;
     }
+    if (lat === null || lng === null) return '-';
     return `${formatCoordinate(lat, 5)}, ${formatCoordinate(lng, 5)}`;
+  };
+
+  const formatShortId = (id) => {
+    if (!id) return '-';
+    if (id.length > 12) {
+      return id.slice(0, 8);
+    }
+    return id;
   };
 
   return (
     <Card
       title="Titik Deteksi Terakhir"
-      subtitle="5 titik kerusakan jalan terverifikasi sistem YOLOv8"
+      subtitle="Titik kerusakan jalan terverifikasi sistem YOLO11m & Supabase"
       noPadding
       className={className}
     >
       {/* 1. MOBILE CARD VIEW (< md) */}
       <div className="md:hidden divide-y divide-slate-100">
-        {loading ? (
+        {isLoading ? (
           [1, 2, 3].map((i) => (
             <div key={i} className="p-4 space-y-2.5 animate-pulse">
               <div className="flex justify-between items-center">
@@ -69,7 +86,7 @@ const RecentDetections = ({ className = '' }) => {
           ))
         ) : recentList.length === 0 ? (
           <div className="p-6 text-center text-xs text-slate-400">
-            Belum ada deteksi terbaru
+            Belum ada deteksi terbaru di Supabase
           </div>
         ) : (
           recentList.map((item) => {
@@ -91,15 +108,18 @@ const RecentDetections = ({ className = '' }) => {
                   <Badge variant={item.type} showIcon>
                     {typeConfig.label}
                   </Badge>
-                  <span className="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    {item.id}
+                  <span
+                    className="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-[120px]"
+                    title={item.id}
+                  >
+                    #{formatShortId(item.id)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-slate-800 font-semibold">
                   <span className="flex items-center gap-1.5 truncate">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    {item.location || item.roadName || 'Kota Bandung'}
+                    {item.location || item.roadName || 'Koridor Surabaya – Mojokerto – Jombang'}
                   </span>
                   <span className="text-[11px] font-bold text-emerald-600 flex-shrink-0">
                     {confPercent}%
@@ -132,7 +152,7 @@ const RecentDetections = ({ className = '' }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
-            {loading ? (
+            {isLoading ? (
               [1, 2, 3, 4, 5].map((i) => (
                 <tr key={i} className="animate-pulse">
                   <td className="px-5 py-3.5"><div className="h-4 bg-slate-200 rounded w-16" /></td>
@@ -146,7 +166,7 @@ const RecentDetections = ({ className = '' }) => {
             ) : recentList.length === 0 ? (
               <tr>
                 <td colSpan="6" className="px-5 py-8 text-center text-slate-400">
-                  Belum ada data deteksi terbaru
+                  Belum ada data deteksi terbaru di Supabase
                 </td>
               </tr>
             ) : (
@@ -156,8 +176,11 @@ const RecentDetections = ({ className = '' }) => {
                 );
                 return (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 font-mono font-bold text-blue-600">
-                      {item.id}
+                    <td
+                      className="px-5 py-3.5 font-mono font-bold text-blue-600 truncate max-w-[100px]"
+                      title={item.id}
+                    >
+                      #{formatShortId(item.id)}
                     </td>
                     <td className="px-5 py-3.5">
                       <Badge variant={item.type} showIcon>
@@ -165,7 +188,7 @@ const RecentDetections = ({ className = '' }) => {
                       </Badge>
                     </td>
                     <td className="px-5 py-3.5 text-slate-800 font-semibold">
-                      {item.location || item.roadName || 'Kota Bandung'}
+                      {item.location || item.roadName || 'Koridor Surabaya – Mojokerto – Jombang'}
                     </td>
                     <td className="px-5 py-3.5 font-mono text-[11px] text-slate-500">
                       {renderCoordinates(item.coordinates)}
@@ -204,3 +227,4 @@ const RecentDetections = ({ className = '' }) => {
 };
 
 export default RecentDetections;
+

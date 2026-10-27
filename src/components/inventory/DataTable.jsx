@@ -113,7 +113,7 @@ const DataTable = ({
         id: 'location',
         header: 'Lokasi Jalan',
         accessorFn: (row) =>
-          row.location || row.locationName || row.roadName || 'Kota Bandung',
+          row.location || row.locationName || row.roadName || 'Koridor Surabaya – Mojokerto – Jombang',
         cell: (info) => (
           <span className="font-semibold text-slate-800">
             {info.getValue()}
@@ -287,7 +287,7 @@ const DataTable = ({
                 <div className="flex items-center justify-between text-xs text-slate-800 font-bold">
                   <span className="flex items-center gap-1.5 truncate">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    {item.location || item.roadName || 'Kota Bandung'}
+                    {item.location || item.roadName || 'Koridor Surabaya – Mojokerto – Jombang'}
                   </span>
                   <span className="text-emerald-600 font-mono text-[11px]">
                     {formatConfidence(item.confidence)}

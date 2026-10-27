@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -10,21 +10,22 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Card from '../common/Card';
+import { getDashboardStats } from '../../services';
 
-const trendData = [
-  { month: 'Jul', longitudinal_crack: 8, alligator_crack: 6, rutting: 4, patches: 3 },
-  { month: 'Agu', longitudinal_crack: 12, alligator_crack: 9, rutting: 5, patches: 4 },
-  { month: 'Sep', longitudinal_crack: 10, alligator_crack: 7, rutting: 4, patches: 3 },
-  { month: 'Okt', longitudinal_crack: 15, alligator_crack: 11, rutting: 6, patches: 5 },
-  { month: 'Nov', longitudinal_crack: 11, alligator_crack: 8, rutting: 5, patches: 4 },
-  { month: 'Des', longitudinal_crack: 14, alligator_crack: 10, rutting: 7, patches: 6 },
+const fallbackTrend = [
+  { month: 'Mei', longitudinal_crack: 0, alligator_crack: 0, rutting: 0, patches: 0 },
+  { month: 'Jun', longitudinal_crack: 1, alligator_crack: 0, rutting: 0, patches: 0 },
+  { month: 'Jul', longitudinal_crack: 2, alligator_crack: 1, rutting: 0, patches: 0 },
+  { month: 'Agu', longitudinal_crack: 2, alligator_crack: 1, rutting: 1, patches: 0 },
+  { month: 'Sep', longitudinal_crack: 3, alligator_crack: 1, rutting: 1, patches: 1 },
+  { month: 'Okt', longitudinal_crack: 4, alligator_crack: 1, rutting: 1, patches: 1 },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md text-xs">
-        <p className="font-semibold text-gray-800 mb-2 border-b pb-1">
+      <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-md text-xs">
+        <p className="font-semibold text-slate-800 mb-2 border-b pb-1">
           Bulan {label}
         </p>
         <div className="space-y-1">
@@ -37,7 +38,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                 />
                 {entry.name}:
               </span>
-              <span className="font-bold text-gray-900">{entry.value} kasus</span>
+              <span className="font-bold text-slate-900">{entry.value} kasus</span>
             </div>
           ))}
         </div>
@@ -47,11 +48,42 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const TrendChart = ({ className = '' }) => {
+const TrendChart = ({ stats: propStats, className = '' }) => {
+  const [stats, setStats] = useState(propStats || null);
+
+  useEffect(() => {
+    if (propStats) {
+      setStats(propStats);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+        const response = await getDashboardStats();
+        if (isMounted && response?.success) {
+          setStats(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to load trend stats:', err);
+      }
+    };
+
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [propStats]);
+
+  const trendData =
+    stats?.monthlyTrend && stats.monthlyTrend.length > 0
+      ? stats.monthlyTrend
+      : fallbackTrend;
+
   return (
     <Card
       title="Tren Kerusakan Bulanan"
-      subtitle="Perkembangan temuan kondisi jalan 6 bulan terakhir (Jul - Des)"
+      subtitle="Perkembangan temuan kondisi jalan 6 bulan terakhir"
       className={className}
     >
       <div className="w-full h-72">
@@ -60,18 +92,18 @@ const TrendChart = ({ className = '' }) => {
             data={trendData}
             margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis
               dataKey="month"
               tickLine={false}
-              stroke="#9CA3AF"
-              tick={{ fontSize: 12, fill: '#6B7280' }}
+              stroke="#94a3b8"
+              tick={{ fontSize: 12, fill: '#64748b' }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              stroke="#9CA3AF"
-              tick={{ fontSize: 12, fill: '#6B7280' }}
+              stroke="#94a3b8"
+              tick={{ fontSize: 12, fill: '#64748b' }}
               allowDecimals={false}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -93,9 +125,9 @@ const TrendChart = ({ className = '' }) => {
               type="monotone"
               dataKey="alligator_crack"
               name="Retak Buaya"
-              stroke="#EF4444"
+              stroke="#DC2626"
               strokeWidth={2.5}
-              dot={{ r: 4, fill: '#EF4444' }}
+              dot={{ r: 4, fill: '#DC2626' }}
               activeDot={{ r: 6 }}
             />
             <Line
@@ -124,3 +156,4 @@ const TrendChart = ({ className = '' }) => {
 };
 
 export default TrendChart;
+

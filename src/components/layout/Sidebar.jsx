@@ -147,29 +147,37 @@ const Sidebar = () => {
 
         {/* Footer / Status Mode */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/60">
-          {isMockMode && (
-            <div
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-emerald-900 ${
-                !sidebarOpen ? 'justify-center px-1' : ''
-              }`}
-            >
-              <div className="relative flex items-center justify-center flex-shrink-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="absolute w-4 h-4 rounded-full bg-emerald-400/40 animate-ping" />
-              </div>
-              {sidebarOpen && (
-                <div className="flex flex-col text-xs leading-none">
-                  <span className="font-bold text-emerald-950 flex items-center gap-1">
-                    Simulasi Aktif
-                    <Sparkles className="w-3 h-3 text-emerald-600" />
-                  </span>
-                  <span className="text-[10px] text-emerald-700/90 mt-0.5">
-                    Model YOLOv8 Mock Data
-                  </span>
-                </div>
-              )}
+          <div
+            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl ${
+              isMockMode
+                ? 'bg-amber-50/90 border border-amber-200/80 text-amber-900'
+                : 'bg-emerald-50/90 border border-emerald-200/80 text-emerald-900'
+            } ${!sidebarOpen ? 'justify-center px-1' : ''}`}
+          >
+            <div className="relative flex items-center justify-center flex-shrink-0">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  isMockMode ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+              />
+              <span
+                className={`absolute w-4 h-4 rounded-full ${
+                  isMockMode ? 'bg-amber-400/40' : 'bg-emerald-400/40 animate-ping'
+                }`}
+              />
             </div>
-          )}
+            {sidebarOpen && (
+              <div className="flex flex-col text-xs leading-none">
+                <span className="font-bold flex items-center gap-1">
+                  {isMockMode ? 'Mode Simulasi' : 'Supabase Live'}
+                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                </span>
+                <span className="text-[10px] text-slate-500 mt-0.5">
+                  {isMockMode ? 'Data Dummy Lokal' : 'Cloud Database Aktif'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
     </>

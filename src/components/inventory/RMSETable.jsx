@@ -73,7 +73,7 @@ const RMSETable = ({
             <span className="text-xs text-slate-500 font-semibold">titik validasi</span>
           </div>
           <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500">
-            Tersebar di koridor jalan Kota Bandung
+            Tersebar di koridor Surabaya – Mojokerto – Jombang
           </p>
         </div>
 

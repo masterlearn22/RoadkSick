@@ -3,11 +3,17 @@ import { AlertTriangle, Split, Activity, ShieldCheck } from 'lucide-react';
 import StatCard from '../common/StatCard';
 import { getDashboardStats } from '../../services';
 
-const OverviewStats = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+const OverviewStats = ({ stats: propStats, loading: propLoading }) => {
+  const [stats, setStats] = useState(propStats || null);
+  const [loading, setLoading] = useState(propStats ? false : true);
 
   useEffect(() => {
+    if (propStats) {
+      setStats(propStats);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     const fetchStats = async () => {
       try {
@@ -26,9 +32,11 @@ const OverviewStats = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [propStats]);
 
-  if (loading) {
+  const isLoading = propLoading !== undefined ? propLoading : loading;
+
+  if (isLoading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {[1, 2, 3, 4].map((i) => (
@@ -47,14 +55,13 @@ const OverviewStats = () => {
     );
   }
 
-  const total = stats?.totalDetections ?? 127;
-  const longitudinal = stats?.byType?.longitudinal_crack ?? 45;
-  const alligator = stats?.byType?.alligator_crack ?? 32;
-  const patches = stats?.byType?.patches ?? 18;
+  const total = stats?.totalDetections || 0;
+  const longitudinal = (stats?.byType?.longitudinal_crack || 0) + (stats?.byType?.retak_memanjang || 0);
+  const alligator = (stats?.byType?.alligator_crack || 0) + (stats?.byType?.retak_buaya || 0);
+  const pothole = (stats?.byType?.pothole || 0) + (stats?.byType?.jalan_berlubang || 0);
+  const rutting = (stats?.byType?.rutting || 0) + (stats?.byType?.jalan_tidak_rata || 0) + (stats?.byType?.patches || 0);
 
-  const longitudinalPct = ((longitudinal / total) * 100).toFixed(1);
-  const alligatorPct = ((alligator / total) * 100).toFixed(1);
-  const patchesPct = ((patches / total) * 100).toFixed(1);
+  const calcPct = (count) => (total > 0 ? ((count / total) * 100).toFixed(1) : '0.0');
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -63,17 +70,18 @@ const OverviewStats = () => {
         title="Total Kerusakan"
         value={total}
         icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
-        change="+12% bln lalu"
+        subtitle="Surabaya – Jombang"
+        change={total > 0 ? `${total} titik live` : 'Belum ada data'}
         changeType="increase"
         color="red"
       />
 
       {/* 2. Longitudinal Crack */}
       <StatCard
-        title="Retak Panjang"
+        title="Retak Memanjang"
         value={longitudinal}
         icon={<Split className="w-5 h-5 text-orange-500" />}
-        subtitle={`${longitudinalPct}% total`}
+        subtitle={`${calcPct(longitudinal)}% total`}
         color="orange"
       />
 
@@ -81,21 +89,22 @@ const OverviewStats = () => {
       <StatCard
         title="Retak Buaya"
         value={alligator}
-        icon={<Activity className="w-5 h-5 text-amber-500" />}
-        subtitle={`${alligatorPct}% total`}
+        icon={<Activity className="w-5 h-5 text-rose-500" />}
+        subtitle={`${calcPct(alligator)}% total`}
         color="purple"
       />
 
-      {/* 4. Patches */}
+      {/* 4. Aspal Bergelombang / Lubang */}
       <StatCard
-        title="Tambalan"
-        value={patches}
+        title={pothole > 0 ? 'Jalan Berlubang' : 'Aspal Rusak / Tambalan'}
+        value={pothole > 0 ? pothole : rutting}
         icon={<ShieldCheck className="w-5 h-5 text-emerald-500" />}
-        subtitle={`${patchesPct}% total`}
-        color="emerald"
+        subtitle={`${calcPct(pothole > 0 ? pothole : rutting)}% total`}
+        color={pothole > 0 ? 'red' : 'emerald'}
       />
     </div>
   );
 };
 
 export default OverviewStats;
+
