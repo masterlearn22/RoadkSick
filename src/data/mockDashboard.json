@@ -1,133 +1,138 @@
 {
-  "totalDetections": 127,
+  "totalDetections": 98,
   "byType": {
-    "pothole": 45,
     "longitudinal_crack": 32,
-    "alligator_crack": 25,
-    "rutting": 15,
-    "patches": 10
+    "alligator_crack": 28,
+    "rutting": 22,
+    "patches": 16
   },
   "bySeverity": {
-    "high": 42,
-    "medium": 55,
-    "low": 30
+    "high": 35,
+    "medium": 40,
+    "low": 23
   },
+  "bySegment": {
+    "Surabaya - Krian": 38,
+    "Krian - Mojokerto": 32,
+    "Mojokerto - Jombang": 28
+  },
+  "rmseLatest": 2.47,
   "monthlyTrend": [
     {
       "month": "Mei",
-      "pothole": 6,
-      "crack": 8,
-      "rutting": 2,
-      "patches": 1
-    },
-    {
-      "month": "Jun",
-      "pothole": 7,
-      "crack": 9,
+      "longitudinal_crack": 5,
+      "alligator_crack": 4,
       "rutting": 3,
       "patches": 2
     },
     {
+      "month": "Jun",
+      "longitudinal_crack": 6,
+      "alligator_crack": 5,
+      "rutting": 4,
+      "patches": 3
+    },
+    {
       "month": "Jul",
-      "pothole": 8,
-      "crack": 10,
-      "rutting": 2,
+      "longitudinal_crack": 5,
+      "alligator_crack": 5,
+      "rutting": 4,
       "patches": 2
     },
     {
       "month": "Agu",
-      "pothole": 9,
-      "crack": 11,
+      "longitudinal_crack": 6,
+      "alligator_crack": 5,
       "rutting": 3,
-      "patches": 1
+      "patches": 3
     },
     {
       "month": "Sep",
-      "pothole": 7,
-      "crack": 9,
-      "rutting": 2,
-      "patches": 2
+      "longitudinal_crack": 5,
+      "alligator_crack": 4,
+      "rutting": 4,
+      "patches": 3
     },
     {
       "month": "Okt",
-      "pothole": 8,
-      "crack": 10,
-      "rutting": 3,
-      "patches": 2
+      "longitudinal_crack": 5,
+      "alligator_crack": 5,
+      "rutting": 4,
+      "patches": 3
     }
   ],
   "recentDetections": [
     {
       "id": "DET-001",
-      "type": "pothole",
+      "type": "longitudinal_crack",
       "confidence": 0.94,
       "severity": "high",
       "bbox": { "x": 140, "y": 280, "width": 85, "height": 60 },
       "coordinates": {
-        "system": { "lat": -6.921453, "lng": 107.610542 },
-        "groundTruth": { "lat": -6.921478, "lng": 107.610565 }
+        "system": { "lat": -7.3291, "lng": 112.7368 },
+        "groundTruth": { "lat": -7.3292, "lng": 112.7369 }
       },
-      "location": "Jl. Asia Afrika",
+      "location": "Jl. Raya Surabaya - Krian (KM 12)",
       "timestamp": "2024-10-02T08:15:30.000Z",
-      "mode": "realtime",
+      "mode": "image",
       "imageUrl": null
     },
     {
       "id": "DET-002",
-      "type": "longitudinal_crack",
+      "type": "alligator_crack",
       "confidence": 0.88,
       "severity": "medium",
       "bbox": { "x": 210, "y": 190, "width": 120, "height": 45 },
       "coordinates": {
-        "system": { "lat": -6.917524, "lng": 107.609815 },
-        "groundTruth": { "lat": -6.917548, "lng": 107.609838 }
+        "system": { "lat": -7.3615, "lng": 112.6234 },
+        "groundTruth": { "lat": -7.3616, "lng": 112.6235 }
       },
-      "location": "Jl. Braga",
+      "location": "Jl. Raya Krian - Mojokerto (KM 8)",
       "timestamp": "2024-10-03T09:42:15.000Z",
       "mode": "video",
       "imageUrl": null
     },
     {
       "id": "DET-003",
-      "type": "alligator_crack",
+      "type": "rutting",
       "confidence": 0.82,
       "severity": "medium",
       "bbox": { "x": 95, "y": 310, "width": 140, "height": 95 },
       "coordinates": {
-        "system": { "lat": -6.892145, "lng": 107.610231 },
-        "groundTruth": { "lat": -6.892170, "lng": 107.610255 }
+        "system": { "lat": -7.4729, "lng": 112.4411 },
+        "groundTruth": { "lat": -7.4730, "lng": 112.4412 }
       },
-      "location": "Jl. Dago",
+      "location": "Jl. Raya Mojokerto - Jombang (KM 5)",
       "timestamp": "2024-10-04T11:20:00.000Z",
       "mode": "image",
       "imageUrl": null
     },
     {
       "id": "DET-004",
-      "type": "rutting",
+      "type": "patches",
       "confidence": 0.78,
       "severity": "low",
       "bbox": { "x": 180, "y": 240, "width": 110, "height": 130 },
       "coordinates": {
-        "system": { "lat": -6.945821, "lng": 107.605412 },
-        "groundTruth": { "lat": -6.945842, "lng": 107.605436 }
+        "system": { "lat": -7.4501, "lng": 112.4185 },
+        "groundTruth": { "lat": -7.4502, "lng": 112.4186 }
       },
-      "location": "Jl. Moh. Toha",
+      "location": "Jl. Bypass Mojokerto (KM 3)",
       "timestamp": "2024-10-05T13:05:40.000Z",
-      "mode": "realtime",
+      "mode": "image",
       "imageUrl": null
     },
     {
       "id": "DET-005",
-      "type": "patches",
-      "confidence": 0.76,
-      "severity": "low",
+      "type": "longitudinal_crack",
+      "confidence": 0.91,
+      "severity": "high",
       "bbox": { "x": 250, "y": 290, "width": 130, "height": 80 },
       "coordinates": {
-        "system": { "lat": -6.898741, "lng": 107.603892 },
-        "groundTruth": { "lat": -6.898763, "lng": 107.603914 }
+        "system": { "lat": -7.3189, "lng": 112.7511 },
+        "groundTruth": { "lat": -7.3190, "lng": 112.7512 }
       },
-      "location": "Jl. Cihampelas",
+      "location": "Jl. Raya Waru - Krian (KM 6)",
       "timestamp": "2024-10-06T14:50:12.000Z",
       "mode": "video",
       "imageUrl": null

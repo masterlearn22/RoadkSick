@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TableProperties, Target, Download, FileSpreadsheet } from 'lucide-react';
+import { TableProperties, Target, Download } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import FilterPanel from '../components/inventory/FilterPanel';
 import DataTable from '../components/inventory/DataTable';

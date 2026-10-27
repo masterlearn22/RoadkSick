@@ -12,12 +12,12 @@ import {
 import Card from '../common/Card';
 
 const trendData = [
-  { month: 'Jul', pothole: 8, crack: 10, rutting: 2 },
-  { month: 'Agu', pothole: 12, crack: 14, rutting: 4 },
-  { month: 'Sep', pothole: 10, crack: 11, rutting: 3 },
-  { month: 'Okt', pothole: 15, crack: 16, rutting: 5 },
-  { month: 'Nov', pothole: 11, crack: 13, rutting: 4 },
-  { month: 'Des', pothole: 14, crack: 18, rutting: 6 },
+  { month: 'Jul', longitudinal_crack: 8, alligator_crack: 6, rutting: 4, patches: 3 },
+  { month: 'Agu', longitudinal_crack: 12, alligator_crack: 9, rutting: 5, patches: 4 },
+  { month: 'Sep', longitudinal_crack: 10, alligator_crack: 7, rutting: 4, patches: 3 },
+  { month: 'Okt', longitudinal_crack: 15, alligator_crack: 11, rutting: 6, patches: 5 },
+  { month: 'Nov', longitudinal_crack: 11, alligator_crack: 8, rutting: 5, patches: 4 },
+  { month: 'Des', longitudinal_crack: 14, alligator_crack: 10, rutting: 7, patches: 6 },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -82,8 +82,17 @@ const TrendChart = ({ className = '' }) => {
             />
             <Line
               type="monotone"
-              dataKey="pothole"
-              name="Pothole"
+              dataKey="longitudinal_crack"
+              name="Retak Memanjang"
+              stroke="#F59E0B"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: '#F59E0B' }}
+              activeDot={{ r: 6 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="alligator_crack"
+              name="Retak Buaya"
               stroke="#EF4444"
               strokeWidth={2.5}
               dot={{ r: 4, fill: '#EF4444' }}
@@ -91,17 +100,17 @@ const TrendChart = ({ className = '' }) => {
             />
             <Line
               type="monotone"
-              dataKey="crack"
-              name="Cracks"
-              stroke="#F97316"
+              dataKey="rutting"
+              name="Aspal Bergelombang"
+              stroke="#8B5CF6"
               strokeWidth={2.5}
-              dot={{ r: 4, fill: '#F97316' }}
+              dot={{ r: 4, fill: '#8B5CF6' }}
               activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
-              dataKey="rutting"
-              name="Rutting"
+              dataKey="patches"
+              name="Tambalan"
               stroke="#3B82F6"
               strokeWidth={2.5}
               dot={{ r: 4, fill: '#3B82F6' }}

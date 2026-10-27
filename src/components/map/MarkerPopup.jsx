@@ -9,8 +9,8 @@ const MarkerPopup = ({ detection, onDetailClick, onNavigateClick }) => {
   const config = getDamageTypeConfig(detection.type);
 
   // Extract coordinates safely
-  let lat = -6.917;
-  let lng = 107.619;
+  let lat = -7.4664;
+  let lng = 112.4338;
   if (Array.isArray(detection.coordinates)) {
     lat = detection.coordinates[0];
     lng = detection.coordinates[1];
@@ -40,7 +40,7 @@ const MarkerPopup = ({ detection, onDetailClick, onNavigateClick }) => {
     if (onDetailClick) {
       onDetailClick(detection);
     } else {
-      alert(`Detail Kerusakan ID: ${detection.id}\nJenis: ${config.label}\nLokasi: ${detection.location || detection.locationName || 'Kota Bandung'}\nKoordinat: ${lat}, ${lng}`);
+      alert(`Detail Kerusakan ID: ${detection.id}\nJenis: ${config.label}\nLokasi: ${detection.location || detection.locationName || detection.roadName || 'Koridor Surabaya - Mojokerto - Jombang'}\nKoordinat: ${lat}, ${lng}`);
     }
   };
 
@@ -57,13 +57,22 @@ const MarkerPopup = ({ detection, onDetailClick, onNavigateClick }) => {
       </div>
 
       {/* Image Thumbnail / Placeholder */}
-      <div className="w-full h-24 mb-2.5 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-200 relative group">
+      <div
+        onClick={() => detection.imageUrl && window.open(detection.imageUrl, '_blank')}
+        className={`w-full h-28 mb-2.5 bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200 relative group ${detection.imageUrl ? 'cursor-pointer' : ''}`}
+        title={detection.imageUrl ? 'Klik untuk melihat foto asli ber-watermark ukuran penuh' : ''}
+      >
         {detection.imageUrl ? (
-          <img
-            src={detection.imageUrl}
-            alt={config.label}
-            className="w-full h-full object-cover"
-          />
+          <>
+            <img
+              src={detection.imageUrl}
+              alt={config.label}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[11px] font-bold transition-opacity">
+              🔍 Buka Foto Watermark
+            </div>
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center text-gray-400">
             <span className="text-2xl mb-0.5">📷</span>
@@ -77,7 +86,7 @@ const MarkerPopup = ({ detection, onDetailClick, onNavigateClick }) => {
         <div className="flex justify-between items-baseline">
           <span className="text-gray-500">Lokasi:</span>
           <span className="font-medium text-gray-900 text-right truncate max-w-[150px]">
-            {detection.location || detection.locationName || detection.roadName || 'Kota Bandung'}
+            {detection.location || detection.locationName || detection.roadName || 'Surabaya - Mojokerto - Jombang'}
           </span>
         </div>
 

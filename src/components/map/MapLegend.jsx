@@ -4,7 +4,7 @@ import { DAMAGE_TYPES } from '../../utils/damageTypes';
 const MapLegend = ({ markers = [], className = '' }) => {
   // Compute counts per type
   const typeCounts = markers.reduce((acc, m) => {
-    const t = m.type || 'pothole';
+    const t = m.type || 'longitudinal_crack';
     acc[t] = (acc[t] || 0) + 1;
     return acc;
   }, {});

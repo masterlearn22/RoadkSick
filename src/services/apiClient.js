@@ -5,7 +5,12 @@ import axios from 'axios';
  * Includes timeout, default JSON headers, token injection, and structured error handling.
  */
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL:
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+      ? '/api'
+      : (import.meta.env.VITE_API_BASE_URL || '/api'),
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
 const ALL_DAMAGE_TYPES = [
-  'pothole',
   'longitudinal_crack',
   'alligator_crack',
   'rutting',
@@ -14,8 +13,9 @@ const DEFAULT_FILTERS = {
   dateRange: { start: null, end: null },
 };
 
-const DEFAULT_CENTER = [-6.917, 107.619]; // Bandung, Jawa Barat
-const DEFAULT_ZOOM = 14;
+// Koridor Surabaya – Mojokerto – Jombang (center)
+const DEFAULT_CENTER = [-7.4664, 112.4338];
+const DEFAULT_ZOOM = 11;
 
 /**
  * Zustand store for Web GIS mapping, viewport center/zoom, layers, and spatial marker filtering.
@@ -27,6 +27,8 @@ const useMapStore = create((set) => ({
   selectedMarker: null,
   filters: { ...DEFAULT_FILTERS },
   markers: [],
+  surveyTracks: [], // Polyline GNSS tracks
+  rmseVectors: [],  // RMSE error vectors
 
   // Actions
   setCenter: (coords) => set({ center: coords }),
@@ -78,6 +80,10 @@ const useMapStore = create((set) => ({
     }),
 
   setMarkers: (markers) => set({ markers }),
+
+  setSurveyTracks: (tracks) => set({ surveyTracks: tracks }),
+
+  setRmseVectors: (vectors) => set({ rmseVectors: vectors }),
 }));
 
 export default useMapStore;

@@ -5,9 +5,17 @@
 export const APP_NAME = 'RoadSick';
 export const APP_VERSION = '1.0.0';
 
-// Default map view centered at Bandung, Indonesia
-export const DEFAULT_CENTER = [-6.917, 107.619];
-export const DEFAULT_ZOOM = 14;
+// Default map view centered at koridor Surabaya – Mojokerto – Jombang
+export const DEFAULT_CENTER = [-7.4664, 112.4338];
+export const DEFAULT_ZOOM = 11;
+
+// Route segment options for Surabaya – Mojokerto – Jombang corridor
+export const ROUTE_SEGMENTS = [
+  { value: 'Surabaya - Krian', label: 'Surabaya – Sidoarjo/Krian (Koridor 1)' },
+  { value: 'Krian - Mojokerto', label: 'Krian – Bypass Mojokerto (Koridor 2)' },
+  { value: 'Mojokerto - Jombang', label: 'Mojokerto – Mojoagung – Jombang (Koridor 3)' },
+  { value: 'Luar Koridor / Rute Bebas', label: 'Rute Bebas / Eksplorasi (Luar Koridor)' },
+];
 
 // Mock delay durations (ms) for simulating asynchronous requests
 export const MOCK_DELAY = {
@@ -46,6 +54,7 @@ export default {
   APP_VERSION,
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
+  ROUTE_SEGMENTS,
   MOCK_DELAY,
   SEVERITY_LEVELS,
 };

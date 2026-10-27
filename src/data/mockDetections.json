@@ -1,302 +1,172 @@
 [
   {
     "id": "DET-001",
-    "type": "pothole",
+    "type": "longitudinal_crack",
     "confidence": 0.94,
     "severity": "high",
     "bbox": { "x": 140, "y": 280, "width": 85, "height": 60 },
     "coordinates": {
-      "system": { "lat": -6.921453, "lng": 107.610542 },
-      "groundTruth": { "lat": -6.921478, "lng": 107.610565 }
+      "system": { "lat": -7.3291, "lng": 112.7368 },
+      "groundTruth": { "lat": -7.3292, "lng": 112.7369 }
     },
-    "location": "Jl. Asia Afrika",
+    "location": "Jl. Raya Surabaya - Krian (KM 12)",
+    "roadName": "Jl. Raya Surabaya - Krian",
+    "route_segment": "Surabaya - Krian",
     "timestamp": "2024-10-02T08:15:30.000Z",
-    "mode": "realtime",
+    "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-002",
-    "type": "longitudinal_crack",
+    "type": "alligator_crack",
     "confidence": 0.88,
     "severity": "medium",
     "bbox": { "x": 210, "y": 190, "width": 120, "height": 45 },
     "coordinates": {
-      "system": { "lat": -6.917524, "lng": 107.609815 },
-      "groundTruth": { "lat": -6.917548, "lng": 107.609838 }
+      "system": { "lat": -7.3615, "lng": 112.6234 },
+      "groundTruth": { "lat": -7.3616, "lng": 112.6235 }
     },
-    "location": "Jl. Braga",
+    "location": "Jl. Raya Krian - Mojokerto (KM 8)",
+    "roadName": "Jl. Raya Krian - Mojokerto",
+    "route_segment": "Krian - Mojokerto",
     "timestamp": "2024-10-03T09:42:15.000Z",
     "mode": "video",
     "imageUrl": null
   },
   {
     "id": "DET-003",
-    "type": "alligator_crack",
+    "type": "rutting",
     "confidence": 0.82,
     "severity": "medium",
     "bbox": { "x": 95, "y": 310, "width": 140, "height": 95 },
     "coordinates": {
-      "system": { "lat": -6.892145, "lng": 107.610231 },
-      "groundTruth": { "lat": -6.892170, "lng": 107.610255 }
+      "system": { "lat": -7.4729, "lng": 112.4411 },
+      "groundTruth": { "lat": -7.4730, "lng": 112.4412 }
     },
-    "location": "Jl. Dago",
+    "location": "Jl. Raya Mojokerto - Jombang (KM 5)",
+    "roadName": "Jl. Raya Mojokerto - Jombang",
+    "route_segment": "Mojokerto - Jombang",
     "timestamp": "2024-10-04T11:20:00.000Z",
     "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-004",
-    "type": "rutting",
+    "type": "patches",
     "confidence": 0.78,
     "severity": "low",
     "bbox": { "x": 180, "y": 240, "width": 110, "height": 130 },
     "coordinates": {
-      "system": { "lat": -6.945821, "lng": 107.605412 },
-      "groundTruth": { "lat": -6.945842, "lng": 107.605436 }
+      "system": { "lat": -7.4501, "lng": 112.4185 },
+      "groundTruth": { "lat": -7.4502, "lng": 112.4186 }
     },
-    "location": "Jl. Moh. Toha",
+    "location": "Jl. Bypass Mojokerto (KM 3)",
+    "roadName": "Jl. Bypass Mojokerto",
+    "route_segment": "Krian - Mojokerto",
     "timestamp": "2024-10-05T13:05:40.000Z",
-    "mode": "realtime",
+    "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-005",
-    "type": "patches",
-    "confidence": 0.76,
-    "severity": "low",
+    "type": "longitudinal_crack",
+    "confidence": 0.91,
+    "severity": "high",
     "bbox": { "x": 250, "y": 290, "width": 130, "height": 80 },
     "coordinates": {
-      "system": { "lat": -6.898741, "lng": 107.603892 },
-      "groundTruth": { "lat": -6.898763, "lng": 107.603914 }
+      "system": { "lat": -7.3189, "lng": 112.7511 },
+      "groundTruth": { "lat": -7.3190, "lng": 112.7512 }
     },
-    "location": "Jl. Cihampelas",
+    "location": "Jl. Raya Waru - Krian (KM 6)",
+    "roadName": "Jl. Raya Waru - Krian",
+    "route_segment": "Surabaya - Krian",
     "timestamp": "2024-10-06T14:50:12.000Z",
     "mode": "video",
     "imageUrl": null
   },
   {
     "id": "DET-006",
-    "type": "pothole",
-    "confidence": 0.96,
+    "type": "alligator_crack",
+    "confidence": 0.86,
     "severity": "high",
-    "bbox": { "x": 160, "y": 260, "width": 90, "height": 75 },
+    "bbox": { "x": 100, "y": 200, "width": 95, "height": 70 },
     "coordinates": {
-      "system": { "lat": -6.899812, "lng": 107.590123 },
-      "groundTruth": { "lat": -6.899839, "lng": 107.590148 }
+      "system": { "lat": -7.4935, "lng": 112.3678 },
+      "groundTruth": { "lat": -7.4936, "lng": 112.3679 }
     },
-    "location": "Jl. Pasteur",
-    "timestamp": "2024-10-07T10:18:25.000Z",
-    "mode": "realtime",
+    "location": "Jl. Raya Mojoagung (KM 12)",
+    "roadName": "Jl. Raya Mojoagung",
+    "route_segment": "Mojokerto - Jombang",
+    "timestamp": "2024-10-07T07:30:00.000Z",
+    "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-007",
-    "type": "longitudinal_crack",
-    "confidence": 0.85,
+    "type": "rutting",
+    "confidence": 0.79,
     "severity": "medium",
-    "bbox": { "x": 110, "y": 220, "width": 160, "height": 50 },
+    "bbox": { "x": 160, "y": 320, "width": 100, "height": 85 },
     "coordinates": {
-      "system": { "lat": -6.887412, "lng": 107.615234 },
-      "groundTruth": { "lat": -6.887435, "lng": 107.615259 }
+      "system": { "lat": -7.3445, "lng": 112.6890 },
+      "groundTruth": { "lat": -7.3446, "lng": 112.6891 }
     },
-    "location": "Jl. Dipatiukur",
-    "timestamp": "2024-10-08T15:33:10.000Z",
-    "mode": "image",
+    "location": "Jl. Raya Krian (KM 3)",
+    "roadName": "Jl. Raya Krian",
+    "route_segment": "Surabaya - Krian",
+    "timestamp": "2024-10-08T10:15:22.000Z",
+    "mode": "video",
     "imageUrl": null
   },
   {
     "id": "DET-008",
-    "type": "alligator_crack",
-    "confidence": 0.91,
-    "severity": "high",
-    "bbox": { "x": 130, "y": 305, "width": 150, "height": 110 },
+    "type": "patches",
+    "confidence": 0.85,
+    "severity": "low",
+    "bbox": { "x": 220, "y": 260, "width": 115, "height": 90 },
     "coordinates": {
-      "system": { "lat": -6.884123, "lng": 107.612456 },
-      "groundTruth": { "lat": -6.884149, "lng": 107.612481 }
+      "system": { "lat": -7.4112, "lng": 112.5023 },
+      "groundTruth": { "lat": -7.4113, "lng": 112.5024 }
     },
-    "location": "Jl. Ir. H. Juanda",
-    "timestamp": "2024-10-09T08:45:00.000Z",
-    "mode": "video",
+    "location": "Jl. Raya Gedeg - Mojokerto (KM 7)",
+    "roadName": "Jl. Raya Gedeg - Mojokerto",
+    "route_segment": "Krian - Mojokerto",
+    "timestamp": "2024-10-09T16:45:00.000Z",
+    "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-009",
-    "type": "pothole",
-    "confidence": 0.92,
-    "severity": "high",
-    "bbox": { "x": 205, "y": 275, "width": 78, "height": 65 },
+    "type": "longitudinal_crack",
+    "confidence": 0.90,
+    "severity": "medium",
+    "bbox": { "x": 130, "y": 180, "width": 140, "height": 50 },
     "coordinates": {
-      "system": { "lat": -6.912345, "lng": 107.611234 },
-      "groundTruth": { "lat": -6.912371, "lng": 107.611258 }
+      "system": { "lat": -7.5245, "lng": 112.2312 },
+      "groundTruth": { "lat": -7.5246, "lng": 112.2313 }
     },
-    "location": "Jl. Merdeka",
-    "timestamp": "2024-10-10T12:12:44.000Z",
-    "mode": "realtime",
+    "location": "Jl. Raya Jombang Kota (KM 2)",
+    "roadName": "Jl. Raya Jombang Kota",
+    "route_segment": "Mojokerto - Jombang",
+    "timestamp": "2024-10-10T08:00:00.000Z",
+    "mode": "image",
     "imageUrl": null
   },
   {
     "id": "DET-010",
-    "type": "rutting",
-    "confidence": 0.81,
-    "severity": "medium",
-    "bbox": { "x": 175, "y": 210, "width": 95, "height": 140 },
-    "coordinates": {
-      "system": { "lat": -6.920145, "lng": 107.592312 },
-      "groundTruth": { "lat": -6.920168, "lng": 107.592336 }
-    },
-    "location": "Jl. Sudirman",
-    "timestamp": "2024-10-11T16:28:19.000Z",
-    "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-011",
-    "type": "patches",
-    "confidence": 0.77,
-    "severity": "low",
-    "bbox": { "x": 220, "y": 320, "width": 115, "height": 70 },
-    "coordinates": {
-      "system": { "lat": -6.923412, "lng": 107.613456 },
-      "groundTruth": { "lat": -6.923434, "lng": 107.613479 }
-    },
-    "location": "Jl. Asia Afrika",
-    "timestamp": "2024-10-12T07:14:05.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-012",
-    "type": "pothole",
-    "confidence": 0.95,
-    "severity": "high",
-    "bbox": { "x": 150, "y": 290, "width": 92, "height": 72 },
-    "coordinates": {
-      "system": { "lat": -6.916123, "lng": 107.608765 },
-      "groundTruth": { "lat": -6.916148, "lng": 107.608789 }
-    },
-    "location": "Jl. Braga",
-    "timestamp": "2024-10-13T10:05:30.000Z",
-    "mode": "realtime",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-013",
-    "type": "longitudinal_crack",
-    "confidence": 0.89,
-    "severity": "medium",
-    "bbox": { "x": 190, "y": 205, "width": 140, "height": 48 },
-    "coordinates": {
-      "system": { "lat": -6.890123, "lng": 107.611789 },
-      "groundTruth": { "lat": -6.890147, "lng": 107.611812 }
-    },
-    "location": "Jl. Dago",
-    "timestamp": "2024-10-14T11:45:10.000Z",
-    "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-014",
     "type": "alligator_crack",
-    "confidence": 0.84,
-    "severity": "medium",
-    "bbox": { "x": 105, "y": 295, "width": 135, "height": 105 },
-    "coordinates": {
-      "system": { "lat": -6.942156, "lng": 107.607123 },
-      "groundTruth": { "lat": -6.942180, "lng": 107.607146 }
-    },
-    "location": "Jl. Moh. Toha",
-    "timestamp": "2024-10-15T14:22:50.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-015",
-    "type": "pothole",
-    "confidence": 0.98,
+    "confidence": 0.83,
     "severity": "high",
-    "bbox": { "x": 165, "y": 270, "width": 88, "height": 64 },
+    "bbox": { "x": 175, "y": 295, "width": 105, "height": 75 },
     "coordinates": {
-      "system": { "lat": -6.901234, "lng": 107.604567 },
-      "groundTruth": { "lat": -6.901260, "lng": 107.604592 }
+      "system": { "lat": -7.3780, "lng": 112.5890 },
+      "groundTruth": { "lat": -7.3781, "lng": 112.5891 }
     },
-    "location": "Jl. Cihampelas",
-    "timestamp": "2024-10-16T09:30:15.000Z",
-    "mode": "realtime",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-016",
-    "type": "rutting",
-    "confidence": 0.79,
-    "severity": "low",
-    "bbox": { "x": 140, "y": 230, "width": 100, "height": 125 },
-    "coordinates": {
-      "system": { "lat": -6.897456, "lng": 107.588912 },
-      "groundTruth": { "lat": -6.897478, "lng": 107.588934 }
-    },
-    "location": "Jl. Pasteur",
-    "timestamp": "2024-10-17T15:10:40.000Z",
+    "location": "Jl. Raya Sidoarjo - Krian (KM 10)",
+    "roadName": "Jl. Raya Sidoarjo - Krian",
+    "route_segment": "Surabaya - Krian",
+    "timestamp": "2024-10-11T11:30:00.000Z",
     "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-017",
-    "type": "patches",
-    "confidence": 0.75,
-    "severity": "low",
-    "bbox": { "x": 235, "y": 305, "width": 125, "height": 75 },
-    "coordinates": {
-      "system": { "lat": -6.885678, "lng": 107.616789 },
-      "groundTruth": { "lat": -6.885700, "lng": 107.616811 }
-    },
-    "location": "Jl. Dipatiukur",
-    "timestamp": "2024-10-18T13:40:00.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-018",
-    "type": "longitudinal_crack",
-    "confidence": 0.87,
-    "severity": "medium",
-    "bbox": { "x": 125, "y": 215, "width": 155, "height": 52 },
-    "coordinates": {
-      "system": { "lat": -6.882345, "lng": 107.613912 },
-      "groundTruth": { "lat": -6.882369, "lng": 107.613935 }
-    },
-    "location": "Jl. Ir. H. Juanda",
-    "timestamp": "2024-10-19T08:55:22.000Z",
-    "mode": "realtime",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-019",
-    "type": "pothole",
-    "confidence": 0.93,
-    "severity": "high",
-    "bbox": { "x": 195, "y": 285, "width": 82, "height": 62 },
-    "coordinates": {
-      "system": { "lat": -6.910987, "lng": 107.610456 },
-      "groundTruth": { "lat": -6.911012, "lng": 107.610480 }
-    },
-    "location": "Jl. Merdeka",
-    "timestamp": "2024-10-20T16:04:18.000Z",
-    "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-020",
-    "type": "alligator_crack",
-    "confidence": 0.90,
-    "severity": "high",
-    "bbox": { "x": 115, "y": 300, "width": 145, "height": 100 },
-    "coordinates": {
-      "system": { "lat": -6.921876, "lng": 107.590789 },
-      "groundTruth": { "lat": -6.921901, "lng": 107.590814 }
-    },
-    "location": "Jl. Sudirman",
-    "timestamp": "2024-10-21T11:50:35.000Z",
-    "mode": "image",
     "imageUrl": null
   }
 ]

@@ -10,7 +10,6 @@ let detectionsStore = [...mockDetectionsData];
 let rmseStore = JSON.parse(JSON.stringify(mockRMSEData));
 
 const DAMAGE_TYPES = [
-  'pothole',
   'longitudinal_crack',
   'alligator_crack',
   'rutting',
@@ -19,12 +18,12 @@ const DAMAGE_TYPES = [
 
 const SEVERITIES = ['high', 'medium', 'low'];
 
-// Bandung bounding box helper for random jitter
-const getRandomBandungCoordinate = () => {
-  // Center roughly -6.917, 107.619
-  const latJitter = (Math.random() - 0.5) * 0.04;
-  const lngJitter = (Math.random() - 0.5) * 0.04;
-  return [-6.917 + latJitter, 107.619 + lngJitter];
+// Surabaya - Mojokerto - Jombang corridor helper for random jitter
+const getRandomCorridorCoordinate = () => {
+  // Center roughly -7.4664, 112.4338
+  const latJitter = (Math.random() - 0.5) * 0.3;
+  const lngJitter = (Math.random() - 0.5) * 0.5;
+  return [-7.4664 + latJitter, 112.4338 + lngJitter];
 };
 
 /**
@@ -45,14 +44,14 @@ export async function processImageDetection(file) {
   const mockDetectedItems = [
     {
       id: `det-${Date.now()}-1`,
-      class: 'pothole',
-      type: 'pothole',
+      class: 'longitudinal_crack',
+      type: 'longitudinal_crack',
       confidence: 0.94,
       severity: 'high',
-      bbox: [120, 150, 240, 290], // [ymin, xmin, ymax, xmax]
-      coordinates: [-6.914744, 107.60981],
-      dimensions: { widthMeters: 0.85, lengthMeters: 1.1, depthCm: 7.5 },
-      label: 'Lubang (Pothole)',
+      bbox: [120, 150, 240, 290],
+      coordinates: [-7.3291, 112.7368],
+      dimensions: { widthMeters: 0.85, lengthMeters: 1.1, depthCm: 2.0 },
+      label: 'Retak Memanjang (Longitudinal Crack)',
     },
     {
       id: `det-${Date.now()}-2`,
@@ -61,7 +60,7 @@ export async function processImageDetection(file) {
       confidence: 0.87,
       severity: 'medium',
       bbox: [280, 210, 420, 390],
-      coordinates: [-6.914755, 107.60983],
+      coordinates: [-7.3615, 112.6234],
       dimensions: { widthMeters: 1.4, lengthMeters: 2.1, depthCm: 2.0 },
       label: 'Retak Buaya (Alligator Crack)',
     },
@@ -86,7 +85,7 @@ export async function processImageDetection(file) {
  */
 export async function processVideoDetection(file, onProgress) {
   const steps = 10;
-  const interval = 500; // 500ms * 10 = 5000ms
+  const interval = 500;
 
   for (let i = 1; i <= steps; i++) {
     await delay(interval);
@@ -108,21 +107,21 @@ export async function processVideoDetection(file, onProgress) {
       id: `vdet-${Date.now()}-1`,
       frameNumber: 45,
       timestampSeconds: 1.5,
-      type: 'pothole',
+      type: 'longitudinal_crack',
       confidence: 0.92,
       severity: 'high',
       bbox: [100, 120, 220, 260],
-      coordinates: [-6.91823, 107.61452],
+      coordinates: [-7.3291, 112.7368],
     },
     {
       id: `vdet-${Date.now()}-2`,
       frameNumber: 110,
       timestampSeconds: 3.6,
-      type: 'longitudinal_crack',
+      type: 'alligator_crack',
       confidence: 0.85,
       severity: 'medium',
       bbox: [150, 180, 200, 420],
-      coordinates: [-6.91951, 107.61633],
+      coordinates: [-7.3615, 112.6234],
     },
     {
       id: `vdet-${Date.now()}-3`,
@@ -132,7 +131,7 @@ export async function processVideoDetection(file, onProgress) {
       confidence: 0.89,
       severity: 'high',
       bbox: [80, 160, 310, 390],
-      coordinates: [-6.92084, 107.61811],
+      coordinates: [-7.4729, 112.4411],
     },
   ];
 
@@ -145,7 +144,7 @@ export async function processVideoDetection(file, onProgress) {
       detections,
       summary: {
         totalDamageCount: detections.length,
-        typesFound: ['pothole', 'longitudinal_crack', 'rutting'],
+        typesFound: ['longitudinal_crack', 'alligator_crack', 'rutting'],
         averageConfidence: 0.887,
       },
     },
@@ -183,7 +182,7 @@ export async function getRealtimeFrame() {
   const randomSeverity =
     SEVERITIES[Math.floor(Math.random() * SEVERITIES.length)];
   const randomConfidence = +(0.78 + Math.random() * 0.2).toFixed(2);
-  const coordinates = getRandomBandungCoordinate();
+  const coordinates = getRandomCorridorCoordinate();
 
   const detection = {
     id: `rt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -197,7 +196,7 @@ export async function getRealtimeFrame() {
       Math.floor(300 + Math.random() * 150),
     ],
     coordinates,
-    locationName: 'Pendeteksian Kamera Realtime (Bandung)',
+    locationName: 'Koridor Surabaya - Mojokerto - Jombang',
     timestamp: new Date().toISOString(),
   };
 
@@ -236,9 +235,9 @@ export async function getAllDetections(filters = {}) {
     const q = filters.search.toLowerCase().trim();
     filtered = filtered.filter(
       (d) =>
+        d.location?.toLowerCase().includes(q) ||
         d.locationName?.toLowerCase().includes(q) ||
         d.roadName?.toLowerCase().includes(q) ||
-        d.district?.toLowerCase().includes(q) ||
         d.type?.toLowerCase().includes(q) ||
         d.description?.toLowerCase().includes(q)
     );
@@ -295,9 +294,10 @@ export async function getMapMarkers(filters = {}) {
     confidence: det.confidence,
     position: det.coordinates,
     coordinates: det.coordinates,
-    title: det.locationName || det.roadName,
-    locationName: det.locationName,
+    title: det.location || det.locationName || det.roadName,
+    locationName: det.location || det.locationName,
     roadName: det.roadName,
+    route_segment: det.route_segment,
     imageUrl: det.imageUrl,
     timestamp: det.timestamp,
     dimensions: det.dimensions,
@@ -307,6 +307,42 @@ export async function getMapMarkers(filters = {}) {
   return {
     success: true,
     data: markers,
+  };
+}
+
+/**
+ * Fetch mock survey GNSS tracks.
+ * @param {string} sessionId
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export async function getSurveyTracks(sessionId) {
+  await delay(500);
+  // Generate a sample track along the corridor
+  const basePoints = [
+    [-7.2890, 112.7520],
+    [-7.3100, 112.7300],
+    [-7.3291, 112.7100],
+    [-7.3500, 112.6800],
+    [-7.3700, 112.6500],
+    [-7.3900, 112.6200],
+    [-7.4100, 112.5900],
+    [-7.4300, 112.5600],
+    [-7.4500, 112.5300],
+    [-7.4664, 112.5000],
+    [-7.4800, 112.4700],
+    [-7.5000, 112.4400],
+    [-7.5200, 112.4100],
+    [-7.5400, 112.3800],
+    [-7.5500, 112.3500],
+  ];
+
+  return {
+    success: true,
+    data: basePoints.map((p, i) => ({
+      latitude: p[0],
+      longitude: p[1],
+      recorded_at: new Date(Date.now() - (basePoints.length - i) * 60000).toISOString(),
+    })),
   };
 }
 
@@ -365,7 +401,6 @@ export async function updateGroundTruth(id, groundTruth) {
   sample.groundTruthCoordinates = groundTruth;
 
   // Recalculate deltas and Euclidean distance in meters
-  // ~1 deg lat = 111,139 m, ~1 deg lng at Bandung (-6.9 deg) = 111,139 * cos(-6.9 deg) ≈ 110,332 m
   const deltaLat = sample.predictedCoordinates[0] - groundTruth[0];
   const deltaLng = sample.predictedCoordinates[1] - groundTruth[1];
   const distMeters = Math.sqrt(

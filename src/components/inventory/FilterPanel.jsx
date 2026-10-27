@@ -60,10 +60,9 @@ const FilterPanel = ({
               className="w-full sm:w-auto px-2.5 py-2 bg-slate-50/80 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold cursor-pointer"
             >
               <option value="all">Semua Jenis</option>
-              <option value="pothole">Lubang (Pothole)</option>
               <option value="longitudinal_crack">Retak Memanjang</option>
               <option value="alligator_crack">Retak Buaya</option>
-              <option value="rutting">Amblas (Rutting)</option>
+              <option value="rutting">Aspal Bergelombang (Rutting)</option>
               <option value="patches">Tambalan (Patches)</option>
             </select>
           </div>

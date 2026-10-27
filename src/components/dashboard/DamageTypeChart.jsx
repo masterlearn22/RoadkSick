@@ -9,11 +9,10 @@ import {
 import Card from '../common/Card';
 
 const chartData = [
-  { name: 'Pothole', value: 45, color: '#EF4444', icon: '🕳️' },
-  { name: 'Longitudinal Crack', value: 32, color: '#F97316', icon: '🔀' },
-  { name: 'Alligator Crack', value: 25, color: '#EAB308', icon: '🐊' },
-  { name: 'Rutting', value: 15, color: '#3B82F6', icon: '🛞' },
-  { name: 'Patches', value: 10, color: '#22C55E', icon: '🩹' },
+  { name: 'Retak Memanjang', value: 38, color: '#F59E0B', icon: '🔀' },
+  { name: 'Retak Buaya', value: 27, color: '#EF4444', icon: '🐊' },
+  { name: 'Aspal Bergelombang', value: 18, color: '#8B5CF6', icon: '🛞' },
+  { name: 'Tambalan Tidak Rata', value: 14, color: '#3B82F6', icon: '🩹' },
 ];
 
 const totalDetections = chartData.reduce((acc, curr) => acc + curr.value, 0);

@@ -1,10 +1,23 @@
 import React from 'react';
 
-const PageContainer = ({ children, title, subtitle, action, className = '' }) => {
+const PageContainer = ({
+  children,
+  title,
+  subtitle,
+  action,
+  className = '',
+  hideHeaderOnMobile = false,
+}) => {
   return (
-    <div className={`flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 space-y-4 sm:space-y-6 ${className}`}>
+    <div
+      className={`flex-1 overflow-y-auto p-2 sm:p-5 md:p-6 space-y-3 sm:space-y-6 ${className}`}
+    >
       {(title || subtitle || action) && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200/80">
+        <div
+          className={`flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200/80 ${
+            hideHeaderOnMobile ? 'hidden sm:flex' : 'flex'
+          }`}
+        >
           <div>
             {title && (
               <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">

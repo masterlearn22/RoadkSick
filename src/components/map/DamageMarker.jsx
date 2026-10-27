@@ -20,7 +20,7 @@ const DamageMarker = ({ detection, isSelected = false, onClick, onDetailClick, o
     if (Array.isArray(detection.position)) {
       return detection.position;
     }
-    return [-6.917, 107.619];
+    return [-7.4664, 112.4338];
   }, [detection]);
 
   const customIcon = useMemo(() => {
