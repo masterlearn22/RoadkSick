@@ -28,6 +28,8 @@ import {
 import PageContainer from '../components/layout/PageContainer';
 import BoundingBoxCanvas from '../components/detection/BoundingBoxCanvas';
 import Badge from '../components/common/Badge';
+import ImageUploadMode from '../components/detection/ImageUploadMode';
+import VideoUploadMode from '../components/detection/VideoUploadMode';
 import { createWatermarkedImageBlob } from '../utils/watermark';
 import { uploadDamageImage, saveDetection, processImageDetection } from '../services';
 import { DAMAGE_TYPES } from '../utils/damageTypes';
@@ -40,6 +42,9 @@ const DetectionPage = () => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+
+  // Mode Deteksi: 'image' (Uji Foto YOLO11m) | 'camera' (Kamera Lapangan) | 'video' (Unggah Video)
+  const [detectionMode, setDetectionMode] = useState('image');
 
   // Status Kamera & Streaming
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -111,13 +116,23 @@ const DetectionPage = () => {
   }, [cameraFacing]);
 
   useEffect(() => {
-    startCamera();
+    if (detectionMode === 'camera') {
+      startCamera();
+    } else {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      setIsCameraReady(false);
+      setIsDetecting(false);
+    }
+
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [startCamera]);
+  }, [detectionMode, startCamera]);
 
   // Toggle Kamera Depan / Belakang
   const handleToggleCamera = () => {
@@ -364,18 +379,96 @@ const DetectionPage = () => {
 
   return (
     <PageContainer
-      title="Deteksi Real-Time & Pemetaan Jalan Rusak"
-      subtitle="Kamera smartphone mendeteksi kerusakan jalan secara langsung dan otomatis memetakan ke Web GIS dengan foto ber-watermark posisi"
+      title={
+        detectionMode === 'image'
+          ? 'Uji Model YOLO11m (Foto Citra Jalan)'
+          : detectionMode === 'video'
+          ? 'Deteksi Batch Video Dashcam'
+          : 'Deteksi Real-Time & Pemetaan Jalan Rusak'
+      }
+      subtitle={
+        detectionMode === 'image'
+          ? 'Uji akurasi model YOLO11m hasil training Ultralytics dengan mengunggah foto jalan langsung dari laptop'
+          : detectionMode === 'video'
+          ? 'Analisis berkas video perjalanan koridor jalan raya untuk deteksi kerusakan massal'
+          : 'Kamera smartphone mendeteksi kerusakan jalan secara langsung dan otomatis memetakan ke Web GIS dengan foto ber-watermark posisi'
+      }
       hideHeaderOnMobile={true}
-      className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto"
+      className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto space-y-4"
     >
-      <div className="space-y-3 sm:space-y-4">
-        {/* ========================================================= */}
-        {/* MOBILE TOP STATUS BAR: TELEMETRI & SENSOR PILL */}
-        {/* ========================================================= */}
-        <div className="flex items-center justify-between gap-2 px-1 text-xs">
-          {/* Status GPS Telemetri */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-2xs">
+      {/* ========================================================= */}
+      {/* SEGMENTED DETECTOR MODE TABS (NAVIGASI UTAMA FITUR DETEKSI) */}
+      {/* ========================================================= */}
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-wrap sm:flex-nowrap gap-1.5 mb-2">
+        <button
+          type="button"
+          onClick={() => setDetectionMode('image')}
+          className={`flex-1 min-w-[150px] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            detectionMode === 'image'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 scale-[1.01]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+          }`}
+        >
+          <Camera className="w-4 h-4" />
+          <span>Uji Foto YOLO11m</span>
+          <span
+            className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+              detectionMode === 'image' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
+            }`}
+          >
+            Indoor / Laptop
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDetectionMode('camera')}
+          className={`flex-1 min-w-[150px] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            detectionMode === 'camera'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 scale-[1.01]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+          }`}
+        >
+          <Radio className="w-4 h-4" />
+          <span>Kamera Lapangan</span>
+          <span
+            className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+              detectionMode === 'camera'
+                ? 'bg-white/20 text-white'
+                : 'bg-emerald-100 text-emerald-700'
+            }`}
+          >
+            Live GPS
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDetectionMode('video')}
+          className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            detectionMode === 'video'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 scale-[1.01]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Unggah Video</span>
+        </button>
+      </div>
+
+      {/* MODE 1: IMAGE UPLOAD (TESTING MODEL INDOOR DARI LAPTOP) */}
+      {detectionMode === 'image' && <ImageUploadMode />}
+
+      {/* MODE 2: VIDEO DASHCAM */}
+      {detectionMode === 'video' && <VideoUploadMode />}
+
+      {/* MODE 3: KAMERA SMARTPHONE DENGAN GEOTAGGING REAL-TIME */}
+      {detectionMode === 'camera' && (
+        <div className="space-y-3 sm:space-y-4">
+          {/* MOBILE TOP STATUS BAR: TELEMETRI & SENSOR PILL */}
+          <div className="flex items-center justify-between gap-2 px-1 text-xs">
+            {/* Status GPS Telemetri */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-2xs">
             <span className="relative flex h-2 w-2">
               <span
                 className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
@@ -853,6 +946,7 @@ const DetectionPage = () => {
           )}
         </div>
       </div>
+    )}
 
       {/* ========================================================= */}
       {/* MODAL BOTTOM SHEET PILIH SEGMEN KORIDOR */}

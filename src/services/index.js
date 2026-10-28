@@ -51,5 +51,6 @@ export const createSurveySession = supabaseApi.createSurveySession;
 export const uploadGNSSLog = supabaseApi.uploadGNSSLog;
 export const uploadDamageImage = supabaseApi.uploadDamageImage;
 export const upsertGroundTruth = supabaseApi.upsertGroundTruth;
+export const getYoloApiUrl = supabaseApi.getYoloApiUrl;
 
 export default service;

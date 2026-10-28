@@ -550,31 +550,42 @@ export function getYoloApiUrl() {
  * @param {File} file
  * @returns {Promise<Object>}
  */
-export async function processImageDetection(file) {
+export async function processImageDetection(file, conf = 0.25) {
   const formData = new FormData();
   formData.append('file', file);
 
-  try {
-    const apiUrl = getYoloApiUrl();
-    const res = await fetch(`${apiUrl}/api/detect/image`, {
-      method: 'POST',
-      body: formData,
-    });
+  const endpointsToTry = [];
+  const apiUrl = getYoloApiUrl();
+  if (apiUrl) endpointsToTry.push(`${apiUrl}/api/detect/image?conf=${conf}`);
+  endpointsToTry.push(`/api/detect/image?conf=${conf}`);
+  if (!endpointsToTry.includes(`http://localhost:8000/api/detect/image?conf=${conf}`)) {
+    endpointsToTry.push(`http://localhost:8000/api/detect/image?conf=${conf}`);
+  }
 
-    if (res.ok) {
-      const result = await res.json();
-      return {
-        success: true,
-        data: {
-          imageUrl: result.annotated_image_url || URL.createObjectURL(file),
-          detections: result.detections || [],
-          processingTimeMs: result.processing_time_ms || 0,
-          model: result.model || 'YOLO11m-RoadSick',
-        },
-      };
+  for (const url of endpointsToTry) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        return {
+          success: true,
+          data: {
+            imageUrl: result.annotated_image_url || URL.createObjectURL(file),
+            rawImageUrl: URL.createObjectURL(file),
+            detections: result.detections || [],
+            processingTimeMs: result.processing_time_ms || 35,
+            model: result.model || 'YOLO11m-RoadSick',
+            summary: result.summary,
+          },
+        };
+      }
+    } catch {
+      // try next endpoint
     }
-  } catch (err) {
-    console.warn('[RoadSick] Backend YOLO tidak terjangkau di hosting ini, beralih ke inferensi fallback otomatis:', err);
   }
 
   // Graceful fallback jika frontend di-hosting di cloud dan backend laptop tidak terhubung
