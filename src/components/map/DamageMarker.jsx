@@ -2,32 +2,36 @@ import React, { useMemo } from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import MarkerPopup from './MarkerPopup';
-import { getDamageTypeConfig } from '../../utils/damageTypes';
+import { getDamageTypeConfig } from '../../data/damageTypes';
+import { DEFAULT_CENTER } from '../../utils/constants';
 
-const DamageMarker = ({ detection, isSelected = false, onClick, onDetailClick, onNavigateClick }) => {
-  if (!detection) return null;
-
+const DamageMarker = ({
+  detection,
+  isSelected = false,
+  onClick,
+  onDetailClick,
+  onNavigateClick,
+}) => {
   const position = useMemo(() => {
-    if (Array.isArray(detection.coordinates)) {
-      return detection.coordinates;
+    if (!detection) return DEFAULT_CENTER;
+    if (Array.isArray(detection.position)) return detection.position;
+    if (Array.isArray(detection.coordinates)) return detection.coordinates;
+    if (detection.coordinates?.lat !== undefined) {
+      return [detection.coordinates.lat, detection.coordinates.lng];
     }
     if (detection.coordinates?.system) {
       return [detection.coordinates.system.lat, detection.coordinates.system.lng];
     }
-    if (detection.coordinates?.lat !== undefined) {
-      return [detection.coordinates.lat, detection.coordinates.lng];
-    }
-    if (Array.isArray(detection.position)) {
-      return detection.position;
-    }
-    return [-7.4664, 112.4338];
+    return DEFAULT_CENTER;
   }, [detection]);
 
+  const detectionType = detection?.type;
+
   const customIcon = useMemo(() => {
-    const config = getDamageTypeConfig(detection.type);
+    const config = getDamageTypeConfig(detectionType);
     const color = config.color;
     const icon = config.icon;
-    const size = isSelected ? 34 : 26;
+    const size = isSelected ? 36 : 28;
 
     return L.divIcon({
       className: 'road-damage-marker-container',
@@ -36,15 +40,15 @@ const DamageMarker = ({ detection, isSelected = false, onClick, onDetailClick, o
           width: ${size}px;
           height: ${size}px;
           background-color: ${color};
-          border: ${isSelected ? '3px solid #1E293B' : '2px solid #FFFFFF'};
+          border: ${isSelected ? '3px solid #0F172A' : '2.5px solid #FFFFFF'};
           border-radius: 9999px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 10px -1px rgba(15, 23, 42, 0.35);
           cursor: pointer;
-          transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
-          transition: transform 0.2s ease, border-color 0.2s ease;
+          transform: ${isSelected ? 'scale(1.12)' : 'scale(1)'};
+          transition: transform 0.2s ease;
         ">
           <span style="font-size: ${isSelected ? '15px' : '12px'}; line-height: 1; user-select: none;">
             ${icon}
@@ -55,7 +59,9 @@ const DamageMarker = ({ detection, isSelected = false, onClick, onDetailClick, o
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -(size / 2) - 4],
     });
-  }, [detection.type, isSelected]);
+  }, [detectionType, isSelected]);
+
+  if (!detection) return null;
 
   return (
     <Marker

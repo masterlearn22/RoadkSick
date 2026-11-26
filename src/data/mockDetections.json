@@ -1,19 +1,16 @@
 [
   {
     "id": "DET-001",
-    "type": "longitudinal_crack",
+    "type": "pothole",
     "confidence": 0.94,
     "severity": "high",
     "bbox": { "x": 140, "y": 280, "width": 85, "height": 60 },
-    "coordinates": {
-      "system": { "lat": -7.3291, "lng": 112.7368 },
-      "groundTruth": { "lat": -7.3292, "lng": 112.7369 }
-    },
-    "location": "Jl. Raya Surabaya - Krian (KM 12)",
-    "roadName": "Jl. Raya Surabaya - Krian",
-    "route_segment": "Surabaya - Krian",
-    "timestamp": "2024-10-02T08:15:30.000Z",
-    "mode": "image",
+    "coordinates": { "lat": -7.5512, "lng": 112.2389 },
+    "location": "Jl. Raya Jombang - Mojoagung (KM 8)",
+    "roadName": "Jl. Raya Jombang - Mojoagung",
+    "route_segment": "Jombang - Mojokerto",
+    "timestamp": "2026-11-10T08:15:30.000Z",
+    "mode": "realtime",
     "imageUrl": null
   },
   {
@@ -22,151 +19,40 @@
     "confidence": 0.88,
     "severity": "medium",
     "bbox": { "x": 210, "y": 190, "width": 120, "height": 45 },
-    "coordinates": {
-      "system": { "lat": -7.3615, "lng": 112.6234 },
-      "groundTruth": { "lat": -7.3616, "lng": 112.6235 }
-    },
-    "location": "Jl. Raya Krian - Mojokerto (KM 8)",
-    "roadName": "Jl. Raya Krian - Mojokerto",
-    "route_segment": "Krian - Mojokerto",
-    "timestamp": "2024-10-03T09:42:15.000Z",
-    "mode": "video",
+    "coordinates": { "lat": -7.4729, "lng": 112.4411 },
+    "location": "Jl. Bypass Mojokerto (KM 32)",
+    "roadName": "Jl. Bypass Mojokerto",
+    "route_segment": "Mojokerto - Krian",
+    "timestamp": "2026-11-12T09:42:15.000Z",
+    "mode": "realtime",
     "imageUrl": null
   },
   {
     "id": "DET-003",
     "type": "rutting",
-    "confidence": 0.82,
+    "confidence": 0.86,
     "severity": "medium",
     "bbox": { "x": 95, "y": 310, "width": 140, "height": 95 },
-    "coordinates": {
-      "system": { "lat": -7.4729, "lng": 112.4411 },
-      "groundTruth": { "lat": -7.4730, "lng": 112.4412 }
-    },
-    "location": "Jl. Raya Mojokerto - Jombang (KM 5)",
-    "roadName": "Jl. Raya Mojokerto - Jombang",
-    "route_segment": "Mojokerto - Jombang",
-    "timestamp": "2024-10-04T11:20:00.000Z",
-    "mode": "image",
+    "coordinates": { "lat": -7.3914, "lng": 112.5792 },
+    "location": "Jl. Raya Mojokerto - Krian (KM 48)",
+    "roadName": "Jl. Raya Mojokerto - Krian",
+    "route_segment": "Mojokerto - Krian",
+    "timestamp": "2026-11-14T11:20:00.000Z",
+    "mode": "realtime",
     "imageUrl": null
   },
   {
     "id": "DET-004",
-    "type": "patches",
-    "confidence": 0.78,
-    "severity": "low",
-    "bbox": { "x": 180, "y": 240, "width": 110, "height": 130 },
-    "coordinates": {
-      "system": { "lat": -7.4501, "lng": 112.4185 },
-      "groundTruth": { "lat": -7.4502, "lng": 112.4186 }
-    },
-    "location": "Jl. Bypass Mojokerto (KM 3)",
-    "roadName": "Jl. Bypass Mojokerto",
-    "route_segment": "Krian - Mojokerto",
-    "timestamp": "2024-10-05T13:05:40.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-005",
     "type": "longitudinal_crack",
     "confidence": 0.91,
     "severity": "high",
-    "bbox": { "x": 250, "y": 290, "width": 130, "height": 80 },
-    "coordinates": {
-      "system": { "lat": -7.3189, "lng": 112.7511 },
-      "groundTruth": { "lat": -7.3190, "lng": 112.7512 }
-    },
-    "location": "Jl. Raya Waru - Krian (KM 6)",
-    "roadName": "Jl. Raya Waru - Krian",
-    "route_segment": "Surabaya - Krian",
-    "timestamp": "2024-10-06T14:50:12.000Z",
-    "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-006",
-    "type": "alligator_crack",
-    "confidence": 0.86,
-    "severity": "high",
-    "bbox": { "x": 100, "y": 200, "width": 95, "height": 70 },
-    "coordinates": {
-      "system": { "lat": -7.4935, "lng": 112.3678 },
-      "groundTruth": { "lat": -7.4936, "lng": 112.3679 }
-    },
-    "location": "Jl. Raya Mojoagung (KM 12)",
-    "roadName": "Jl. Raya Mojoagung",
-    "route_segment": "Mojokerto - Jombang",
-    "timestamp": "2024-10-07T07:30:00.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-007",
-    "type": "rutting",
-    "confidence": 0.79,
-    "severity": "medium",
-    "bbox": { "x": 160, "y": 320, "width": 100, "height": 85 },
-    "coordinates": {
-      "system": { "lat": -7.3445, "lng": 112.6890 },
-      "groundTruth": { "lat": -7.3446, "lng": 112.6891 }
-    },
-    "location": "Jl. Raya Krian (KM 3)",
-    "roadName": "Jl. Raya Krian",
-    "route_segment": "Surabaya - Krian",
-    "timestamp": "2024-10-08T10:15:22.000Z",
-    "mode": "video",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-008",
-    "type": "patches",
-    "confidence": 0.85,
-    "severity": "low",
-    "bbox": { "x": 220, "y": 260, "width": 115, "height": 90 },
-    "coordinates": {
-      "system": { "lat": -7.4112, "lng": 112.5023 },
-      "groundTruth": { "lat": -7.4113, "lng": 112.5024 }
-    },
-    "location": "Jl. Raya Gedeg - Mojokerto (KM 7)",
-    "roadName": "Jl. Raya Gedeg - Mojokerto",
-    "route_segment": "Krian - Mojokerto",
-    "timestamp": "2024-10-09T16:45:00.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-009",
-    "type": "longitudinal_crack",
-    "confidence": 0.90,
-    "severity": "medium",
-    "bbox": { "x": 130, "y": 180, "width": 140, "height": 50 },
-    "coordinates": {
-      "system": { "lat": -7.5245, "lng": 112.2312 },
-      "groundTruth": { "lat": -7.5246, "lng": 112.2313 }
-    },
-    "location": "Jl. Raya Jombang Kota (KM 2)",
-    "roadName": "Jl. Raya Jombang Kota",
-    "route_segment": "Mojokerto - Jombang",
-    "timestamp": "2024-10-10T08:00:00.000Z",
-    "mode": "image",
-    "imageUrl": null
-  },
-  {
-    "id": "DET-010",
-    "type": "alligator_crack",
-    "confidence": 0.83,
-    "severity": "high",
-    "bbox": { "x": 175, "y": 295, "width": 105, "height": 75 },
-    "coordinates": {
-      "system": { "lat": -7.3780, "lng": 112.5890 },
-      "groundTruth": { "lat": -7.3781, "lng": 112.5891 }
-    },
-    "location": "Jl. Raya Sidoarjo - Krian (KM 10)",
-    "roadName": "Jl. Raya Sidoarjo - Krian",
-    "route_segment": "Surabaya - Krian",
-    "timestamp": "2024-10-11T11:30:00.000Z",
-    "mode": "video",
+    "bbox": { "x": 180, "y": 240, "width": 110, "height": 130 },
+    "coordinates": { "lat": -7.3291, "lng": 112.7368 },
+    "location": "Jl. Raya Krian - Surabaya (KM 76)",
+    "roadName": "Jl. Raya Krian - Surabaya",
+    "route_segment": "Krian - Surabaya",
+    "timestamp": "2026-11-18T13:05:40.000Z",
+    "mode": "realtime",
     "imageUrl": null
   }
 ]

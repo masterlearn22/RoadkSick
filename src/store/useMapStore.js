@@ -1,10 +1,11 @@
 import { create } from 'zustand';
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from '../utils/constants';
 
 const ALL_DAMAGE_TYPES = [
-  'longitudinal_crack',
-  'alligator_crack',
+  'pothole',
   'rutting',
-  'patches',
+  'alligator_crack',
+  'longitudinal_crack',
 ];
 
 const DEFAULT_FILTERS = {
@@ -13,28 +14,18 @@ const DEFAULT_FILTERS = {
   dateRange: { start: null, end: null },
 };
 
-// Koridor Surabaya – Mojokerto – Jombang (center)
-const DEFAULT_CENTER = [-7.4664, 112.4338];
-const DEFAULT_ZOOM = 11;
-
 /**
- * Zustand store for Web GIS mapping, viewport center/zoom, layers, and spatial marker filtering.
+ * Zustand store untuk Web GIS Map (Rute Jombang - Surabaya)
  */
 const useMapStore = create((set) => ({
-  // State
   center: [...DEFAULT_CENTER],
   zoom: DEFAULT_ZOOM,
   selectedMarker: null,
   filters: { ...DEFAULT_FILTERS },
   markers: [],
-  surveyTracks: [], // Polyline GNSS tracks
-  rmseVectors: [],  // RMSE error vectors
 
-  // Actions
   setCenter: (coords) => set({ center: coords }),
-
   setZoom: (level) => set({ zoom: level }),
-
   setSelectedMarker: (marker) => set({ selectedMarker: marker }),
 
   setFilters: (newFilters) =>
@@ -80,10 +71,6 @@ const useMapStore = create((set) => ({
     }),
 
   setMarkers: (markers) => set({ markers }),
-
-  setSurveyTracks: (tracks) => set({ surveyTracks: tracks }),
-
-  setRmseVectors: (vectors) => set({ rmseVectors: vectors }),
 }));
 
 export default useMapStore;

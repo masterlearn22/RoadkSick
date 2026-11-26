@@ -36,7 +36,7 @@ export const formatConfidence = (value) => {
  * @param {string} locale
  * @returns {string}
  */
-export const formatTimestamp = (isoString, locale = 'id-ID') => {
+export const formatTimestamp = (isoString) => {
   if (!isoString) return '-';
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return '-';

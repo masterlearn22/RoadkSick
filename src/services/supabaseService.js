@@ -1,538 +1,17 @@
 import { supabase } from '../lib/supabaseClient';
-import { haversineDistance } from '../utils/coordinates';
+import { normalizeDamageType } from '../data/damageTypes';
+import { normalizeSeverity, severityToDbValue } from '../utils/constants';
 
 /**
- * Supabase Service Layer untuk RoadSick
- * Mengimplementasikan seluruh fungsi yang dibutuhkan oleh Zustand stores
+ * Supabase & YOLO Real-Time Service Layer untuk RoadSick Web GIS
+ * Sesuai Proposal Skripsi:
+ * - Hanya 1 metode deteksi: Real-Time Object Detection (kamera stream + Web Geolocation API)
+ * - 4 Kelas Kerusakan: pothole, rutting (Rutting & Patches), alligator_crack, longitudinal_crack
+ * - Tanpa pengujian RMSE / sensor wearable
  */
 
 // ========================
-// Survey Session Functions
-// ========================
-
-/**
- * Buat sesi survei baru
- * @param {Object} sessionData
- * @returns {Promise<Object>}
- */
-export async function createSurveySession(sessionData) {
-  const { data, error } = await supabase
-    .from('survey_sessions')
-    .insert([{
-      session_name: sessionData.sessionName,
-      route_corridor: sessionData.routeCorridor || 'Surabaya - Mojokerto - Jombang',
-      route_segment: sessionData.routeSegment,
-      camera_device: sessionData.cameraDevice || 'Smartphone Dashcam (Motor)',
-      gnss_device: sessionData.gnssDevice || 'Smartwatch Supercalla Onyx (Dual-Freq GPS + BeiDou)',
-      time_offset_ms: sessionData.timeOffsetMs || 0,
-      total_distance_km: sessionData.totalDistanceKm || 0,
-      notes: sessionData.notes,
-    }])
-    .select()
-    .single();
-
-  if (error) throw new Error(`Gagal membuat sesi survei: ${error.message}`);
-  return { success: true, data };
-}
-
-/**
- * Upload log GNSS track points ke database dan file raw ke storage
- * @param {string} sessionId
- * @param {Array} trackPoints
- * @param {File} rawFile
- * @returns {Promise<Object>}
- */
-export async function uploadGNSSLog(sessionId, trackPoints, rawFile) {
-  // Upload raw file to storage
-  let gpxFileUrl = null;
-  if (rawFile) {
-    const filePath = `${sessionId}/${rawFile.name}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('gnss-tracks')
-      .upload(filePath, rawFile);
-
-    if (uploadError) {
-      console.warn('Gagal upload file GNSS:', uploadError.message);
-    } else {
-      const { data: urlData } = supabase.storage
-        .from('gnss-tracks')
-        .getPublicUrl(filePath);
-      gpxFileUrl = urlData?.publicUrl;
-    }
-  }
-
-  // Update session with file URL
-  if (gpxFileUrl) {
-    await supabase
-      .from('survey_sessions')
-      .update({ gpx_file_url: gpxFileUrl })
-      .eq('id', sessionId);
-  }
-
-  // Insert track points in batches of 500
-  const batchSize = 500;
-  const rows = trackPoints.map((p) => ({
-    session_id: sessionId,
-    recorded_at: p.recorded_at || new Date(p.timestampMs).toISOString(),
-    latitude: p.latitude,
-    longitude: p.longitude,
-    altitude: p.altitude,
-    hdop: p.hdop,
-    satellite_system: 'GPS+BeiDou',
-  }));
-
-  for (let i = 0; i < rows.length; i += batchSize) {
-    const batch = rows.slice(i, i + batchSize);
-    const { error } = await supabase.from('gnss_track_points').insert(batch);
-    if (error) throw new Error(`Gagal upload titik GNSS batch ${i}: ${error.message}`);
-  }
-
-  return { success: true, data: { totalPoints: rows.length, gpxFileUrl } };
-}
-
-// ========================
-// Damage Detection Functions
-// ========================
-
-/**
- * Upload gambar deteksi ke Supabase Storage
- * @param {File} file
- * @returns {Promise<string>} Public URL
- */
-export async function uploadDamageImage(file) {
-  const fileName = `${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage
-    .from('damage-images')
-    .upload(fileName, file);
-
-  if (error) throw new Error(`Gagal upload gambar: ${error.message}`);
-
-  const { data: urlData } = supabase.storage
-    .from('damage-images')
-    .getPublicUrl(fileName);
-
-  return urlData?.publicUrl || '';
-}
-
-/**
- * Simpan hasil deteksi kerusakan jalan
- * @param {Object} detectionPayload
- * @returns {Promise<Object>}
- */
-export async function saveDetection(detectionPayload) {
-  const row = {
-    session_id: detectionPayload.sessionId || null,
-    damage_type: detectionPayload.type || detectionPayload.damage_type,
-    confidence: detectionPayload.confidence,
-    severity: detectionPayload.severity || 'sedang',
-    bbox: detectionPayload.bbox || null,
-    image_url: detectionPayload.imageUrl || detectionPayload.image_url || null,
-    captured_at: detectionPayload.capturedAt || detectionPayload.timestamp || new Date().toISOString(),
-    latitude: detectionPayload.latitude,
-    longitude: detectionPayload.longitude,
-    phone_latitude: detectionPayload.phoneLat || null,
-    phone_longitude: detectionPayload.phoneLng || null,
-    road_name: detectionPayload.roadName || null,
-    route_segment: detectionPayload.routeSegment || 'Surabaya - Jombang - Mojokerto',
-    interpolation_delta_ms: detectionPayload.deltaMs || null,
-    status: 'terdeteksi',
-  };
-
-  const { data, error } = await supabase
-    .from('road_damages')
-    .insert([row])
-    .select()
-    .single();
-
-  if (error) throw new Error(`Gagal menyimpan deteksi: ${error.message}`);
-  return { success: true, data, message: 'Data kerusakan jalan berhasil disimpan ke Supabase.' };
-}
-
-/**
- * Ambil semua deteksi dengan filter
- * @param {Object} filters
- * @returns {Promise<Object>}
- */
-export async function getAllDetections(filters = {}) {
-  let query = supabase
-    .from('road_damages')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (filters.type && filters.type !== 'all') {
-    if (Array.isArray(filters.type)) {
-      query = query.in('damage_type', filters.type);
-    } else {
-      query = query.eq('damage_type', filters.type);
-    }
-  }
-
-  if (filters.severity && filters.severity !== 'all') {
-    query = query.eq('severity', filters.severity);
-  }
-
-  if (filters.route_segment && filters.route_segment !== 'all') {
-    query = query.eq('route_segment', filters.route_segment);
-  }
-
-  if (filters.dateRange?.start) {
-    query = query.gte('captured_at', filters.dateRange.start);
-  }
-  if (filters.dateRange?.end) {
-    query = query.lte('captured_at', filters.dateRange.end);
-  }
-
-  const { data, error } = await query;
-  if (error) throw new Error(`Gagal mengambil data deteksi: ${error.message}`);
-
-  // Map to frontend format
-  const mapped = (data || []).map((d) => ({
-    id: d.id,
-    type: d.damage_type,
-    confidence: d.confidence,
-    severity: d.severity,
-    bbox: d.bbox,
-    coordinates: {
-      system: { lat: d.latitude, lng: d.longitude },
-      groundTruth: null,
-    },
-    location: d.road_name || d.route_segment,
-    roadName: d.road_name,
-    route_segment: d.route_segment,
-    timestamp: d.captured_at,
-    imageUrl: d.image_url,
-    mode: 'image',
-    interpolation_delta_ms: d.interpolation_delta_ms,
-  }));
-
-  return { success: true, data: mapped, total: mapped.length };
-}
-
-// ========================
-// Dashboard Functions
-// ========================
-
-/**
- * Hitung statistik dashboard dari Supabase
- * @returns {Promise<Object>}
- */
-export async function getDashboardStats() {
-  const { data: damages, error } = await supabase
-    .from('road_damages')
-    .select('id, damage_type, severity, route_segment, road_name, latitude, longitude, confidence, created_at, captured_at')
-    .order('created_at', { ascending: false });
-
-  if (error) throw new Error(`Gagal mengambil stats: ${error.message}`);
-
-  const byType = {
-    longitudinal_crack: 0,
-    alligator_crack: 0,
-    pothole: 0,
-    rutting: 0,
-    patches: 0,
-  };
-  const bySeverity = {
-    berat: 0,
-    sedang: 0,
-    ringan: 0,
-  };
-  const bySegment = {};
-
-  for (const d of damages || []) {
-    const t = d.damage_type;
-    byType[t] = (byType[t] || 0) + 1;
-    const s = d.severity || 'sedang';
-    bySeverity[s] = (bySeverity[s] || 0) + 1;
-    if (d.route_segment) {
-      bySegment[d.route_segment] = (bySegment[d.route_segment] || 0) + 1;
-    }
-  }
-
-  // Monthly trend calculation
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  const monthlyMap = {};
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const mName = months[d.getMonth()];
-    monthlyMap[mName] = {
-      month: mName,
-      longitudinal_crack: 0,
-      alligator_crack: 0,
-      rutting: 0,
-      patches: 0,
-      pothole: 0,
-      total: 0,
-    };
-  }
-
-  for (const d of damages || []) {
-    const date = new Date(d.captured_at || d.created_at || now);
-    const mName = months[date.getMonth()];
-    if (monthlyMap[mName]) {
-      const type = d.damage_type;
-      if (monthlyMap[mName][type] !== undefined) {
-        monthlyMap[mName][type] += 1;
-      }
-      monthlyMap[mName].total += 1;
-    }
-  }
-
-  const monthlyTrend = Object.values(monthlyMap);
-
-  // Get latest RMSE
-  const { data: rmseData } = await supabase
-    .from('rmse_evaluations')
-    .select('error_distance_m');
-
-  let rmseLatest = 0;
-  if (rmseData && rmseData.length > 0) {
-    const sumSq = rmseData.reduce((sum, r) => sum + Math.pow(r.error_distance_m, 2), 0);
-    rmseLatest = +Math.sqrt(sumSq / rmseData.length).toFixed(2);
-  }
-
-  return {
-    success: true,
-    data: {
-      totalDetections: (damages || []).length,
-      byType,
-      bySeverity,
-      bySegment,
-      monthlyTrend,
-      rmseLatest,
-      recentDetections: (damages || []).slice(0, 10).map((d) => ({
-        id: d.id,
-        type: d.damage_type,
-        confidence: d.confidence,
-        severity: d.severity,
-        location: d.road_name || d.route_segment || 'Koridor Surabaya - Mojokerto - Jombang',
-        roadName: d.road_name,
-        route_segment: d.route_segment,
-        coordinates: {
-          system: { lat: d.latitude, lng: d.longitude },
-        },
-        timestamp: d.captured_at || d.created_at,
-      })),
-    },
-  };
-}
-
-// ========================
-// Map Functions
-// ========================
-
-/**
- * Ambil marker peta dari Supabase
- * @param {Object} filters
- * @returns {Promise<Object>}
- */
-export async function getMapMarkers(filters = {}) {
-  const result = await getAllDetections(filters);
-  const markers = result.data.map((det) => ({
-    id: det.id,
-    type: det.type,
-    severity: det.severity,
-    confidence: det.confidence,
-    position: [det.coordinates.system.lat, det.coordinates.system.lng],
-    coordinates: det.coordinates,
-    title: det.location || det.roadName,
-    locationName: det.location,
-    roadName: det.roadName,
-    route_segment: det.route_segment,
-    imageUrl: det.imageUrl,
-    timestamp: det.timestamp,
-  }));
-
-  return { success: true, data: markers };
-}
-
-/**
- * Ambil track GNSS survey dari Supabase
- * @param {string} sessionId
- * @returns {Promise<Object>}
- */
-export async function getSurveyTracks(sessionId) {
-  let query = supabase
-    .from('gnss_track_points')
-    .select('latitude, longitude, recorded_at, altitude, hdop')
-    .order('recorded_at', { ascending: true });
-
-  if (sessionId) {
-    query = query.eq('session_id', sessionId);
-  }
-
-  const { data, error } = await query;
-  if (error) throw new Error(`Gagal mengambil track GNSS: ${error.message}`);
-
-  return { success: true, data: data || [] };
-}
-
-// ========================
-// RMSE Functions
-// ========================
-
-/**
- * Ambil data evaluasi RMSE dari Supabase
- * @returns {Promise<Object>}
- */
-export async function getRMSEData() {
-  const { data, error } = await supabase
-    .from('rmse_evaluations')
-    .select(`
-      *,
-      road_damages (
-        damage_type,
-        latitude,
-        longitude,
-        road_name,
-        route_segment,
-        image_url,
-        confidence
-      )
-    `)
-    .order('evaluated_at', { ascending: false });
-
-  if (error) throw new Error(`Gagal mengambil data RMSE: ${error.message}`);
-
-  const samples = (data || []).map((r) => ({
-    id: r.id,
-    detectionId: r.damage_id,
-    sampleCode: r.sample_code,
-    sysLat: r.system_lat,
-    sysLng: r.system_lng,
-    gtLat: r.ground_truth_lat,
-    gtLng: r.ground_truth_lng,
-    system: { lat: r.system_lat, lng: r.system_lng },
-    groundTruth: { lat: r.ground_truth_lat, lng: r.ground_truth_lng },
-    phoneLat: r.phone_gps_lat,
-    phoneLng: r.phone_gps_lng,
-    distance: r.error_distance_m,
-    distanceSquared: r.squared_error_m2,
-    phoneErrorDistance: r.phone_error_distance_m,
-    fieldNotes: r.field_notes,
-    evaluatedAt: r.evaluated_at,
-    damageInfo: r.road_damages,
-  }));
-
-  // Calculate summary
-  let rmseValue = 0;
-  if (samples.length > 0) {
-    const sumSq = samples.reduce((sum, s) => sum + (s.distanceSquared || 0), 0);
-    rmseValue = +Math.sqrt(sumSq / samples.length).toFixed(3);
-  }
-
-  return {
-    success: true,
-    data: {
-      samples,
-      summary: {
-        totalSamples: samples.length,
-        rmseDistanceMeters: rmseValue,
-        overallRMSE: rmseValue,
-        meetsTarget: rmseValue < 3.0,
-        targetThreshold: 3.0,
-      },
-    },
-  };
-}
-
-/**
- * Upsert data ground truth dan hitung error RMSE
- * @param {Object} payload
- * @returns {Promise<Object>}
- */
-export async function upsertGroundTruth(payload) {
-  const {
-    damage_id,
-    ground_truth_lat,
-    ground_truth_lng,
-    phone_gps_lat,
-    phone_gps_lng,
-    field_notes,
-    sample_code,
-  } = payload;
-
-  // Get the detection's system coordinates
-  const { data: damage, error: dmgError } = await supabase
-    .from('road_damages')
-    .select('latitude, longitude')
-    .eq('id', damage_id)
-    .single();
-
-  if (dmgError) throw new Error(`Deteksi tidak ditemukan: ${dmgError.message}`);
-
-  // Calculate error distance using Haversine
-  const errorDistanceM = haversineDistance(
-    damage.latitude,
-    damage.longitude,
-    ground_truth_lat,
-    ground_truth_lng
-  );
-
-  const squaredErrorM2 = errorDistanceM * errorDistanceM;
-
-  // Calculate phone GPS error if provided
-  let phoneErrorDistanceM = null;
-  if (phone_gps_lat && phone_gps_lng) {
-    phoneErrorDistanceM = haversineDistance(
-      phone_gps_lat,
-      phone_gps_lng,
-      ground_truth_lat,
-      ground_truth_lng
-    );
-  }
-
-  const row = {
-    damage_id,
-    sample_code: sample_code || null,
-    system_lat: damage.latitude,
-    system_lng: damage.longitude,
-    ground_truth_lat,
-    ground_truth_lng,
-    phone_gps_lat: phone_gps_lat || null,
-    phone_gps_lng: phone_gps_lng || null,
-    error_distance_m: +errorDistanceM.toFixed(3),
-    squared_error_m2: +squaredErrorM2.toFixed(4),
-    phone_error_distance_m: phoneErrorDistanceM ? +phoneErrorDistanceM.toFixed(3) : null,
-    field_notes: field_notes || null,
-    evaluated_at: new Date().toISOString(),
-  };
-
-  const { data, error } = await supabase
-    .from('rmse_evaluations')
-    .upsert(row, { onConflict: 'damage_id' })
-    .select()
-    .single();
-
-  if (error) throw new Error(`Gagal menyimpan ground truth: ${error.message}`);
-
-  return {
-    success: true,
-    data: {
-      ...data,
-      errorDistanceM: +errorDistanceM.toFixed(3),
-      squaredErrorM2: +squaredErrorM2.toFixed(4),
-    },
-    message: 'Data ground truth berhasil disimpan.',
-  };
-}
-
-/**
- * Update ground truth (wrapper for compatibility with existing service interface)
- * @param {string} id - Detection ID
- * @param {Array<number>} groundTruth - [lat, lng]
- * @returns {Promise<Object>}
- */
-export async function updateGroundTruth(id, groundTruth) {
-  return upsertGroundTruth({
-    damage_id: id,
-    ground_truth_lat: groundTruth[0],
-    ground_truth_lng: groundTruth[1],
-  });
-}
-
-// ========================
-// Detection Processing (proxy to YOLO API)
+// Helper URL Backend YOLO
 // ========================
 export function getYoloApiUrl() {
   if (typeof window !== 'undefined') {
@@ -545,164 +24,333 @@ export function getYoloApiUrl() {
   return (import.meta.env.VITE_YOLO_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
 }
 
-/**
- * Process image detection via YOLOv8/YOLO11m backend with graceful cloud fallback.
- * @param {File} file
- * @returns {Promise<Object>}
- */
-export async function processImageDetection(file, conf = 0.25) {
-  const formData = new FormData();
-  formData.append('file', file);
+export function setYoloApiUrl(url) {
+  if (typeof window === 'undefined') return;
+  const cleaned = String(url || '').trim().replace(/\/+$/, '');
+  if (cleaned) {
+    localStorage.setItem('roadsick_backend_url', cleaned);
+  } else {
+    localStorage.removeItem('roadsick_backend_url');
+  }
+}
 
-  const endpointsToTry = [];
+export async function getBackendModelInfo() {
   const apiUrl = getYoloApiUrl();
-  if (apiUrl) endpointsToTry.push(`${apiUrl}/api/detect/image?conf=${conf}`);
-  endpointsToTry.push(`/api/detect/image?conf=${conf}`);
-  if (!endpointsToTry.includes(`http://localhost:8000/api/detect/image?conf=${conf}`)) {
-    endpointsToTry.push(`http://localhost:8000/api/detect/image?conf=${conf}`);
+  const candidates = [];
+  if (apiUrl) candidates.push(`${apiUrl}/api/model/info`);
+  candidates.push('/api/model/info');
+  if (!candidates.includes('http://localhost:8000/api/model/info')) {
+    candidates.push('http://localhost:8000/api/model/info');
   }
 
-  for (const url of endpointsToTry) {
+  for (const url of candidates) {
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      });
-
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
       if (res.ok) {
-        const result = await res.json();
-        return {
-          success: true,
-          data: {
-            imageUrl: result.annotated_image_url || URL.createObjectURL(file),
-            rawImageUrl: URL.createObjectURL(file),
-            detections: result.detections || [],
-            processingTimeMs: result.processing_time_ms || 35,
-            model: result.model || 'YOLO11m-RoadSick',
-            summary: result.summary,
-          },
-        };
+        const data = await res.json();
+        return { connected: true, endpoint: url, ...data };
       }
     } catch {
-      // try next endpoint
+      // Coba kandidat endpoint berikutnya
     }
   }
 
-  // Graceful fallback jika frontend di-hosting di cloud dan backend laptop tidak terhubung
-  const sampleClasses = ['pothole', 'longitudinal_crack', 'alligator_crack', 'rutting'];
-  const chosenClass = sampleClasses[Math.floor(Math.random() * sampleClasses.length)];
-  const labelMap = {
-    pothole: 'Jalan Berlubang (Pothole)',
-    longitudinal_crack: 'Retak Memanjang',
-    alligator_crack: 'Retak Buaya',
-    rutting: 'Aspal Bergelombang / Tidak Rata',
-  };
-
-  return {
-    success: true,
-    data: {
-      imageUrl: URL.createObjectURL(file),
-      detections: [
-        {
-          id: `det-${Date.now()}-1`,
-          type: chosenClass,
-          class: chosenClass,
-          label: labelMap[chosenClass],
-          confidence: Number((0.85 + Math.random() * 0.12).toFixed(3)),
-          severity: chosenClass === 'pothole' ? 'tinggi' : 'sedang',
-          bbox: { x: 180, y: 140, width: 260, height: 180 },
-        },
-      ],
-      processingTimeMs: 145,
-      model: 'YOLO11m-RoadSick (Cloud Resilient Mode)',
-    },
-  };
+  return { connected: false, model_info: null };
 }
 
-/**
- * Process video detection via YOLOv8/YOLO11m backend with graceful cloud fallback.
- * @param {File} file
- * @param {Function} onProgress
- * @returns {Promise<Object>}
- */
-export async function processVideoDetection(file, onProgress) {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  if (onProgress) onProgress(20);
-
-  try {
-    const apiUrl = getYoloApiUrl();
-    const res = await fetch(`${apiUrl}/api/detect/video`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (onProgress) onProgress(80);
-
-    if (res.ok) {
-      const result = await res.json();
-      if (onProgress) onProgress(100);
-      return {
-        success: true,
-        data: {
-          videoUrl: URL.createObjectURL(file),
-          detections: result.detections || [],
-          totalFrames: result.total_frames || 0,
-          fps: result.fps || 30,
-          summary: result.summary || {},
-        },
-      };
-    }
-  } catch (err) {
-    console.warn('[RoadSick] Video backend tidak terjangkau, menggunakan fallback mode:', err);
-  }
-
-  if (onProgress) onProgress(100);
-
-  return {
-    success: true,
-    data: {
-      videoUrl: URL.createObjectURL(file),
-      detections: [
-        {
-          id: 'vdet-1',
-          frameNumber: 30,
-          timestampSeconds: 1.0,
-          type: 'pothole',
-          confidence: 0.93,
-          severity: 'tinggi',
-          bbox: { x: 120, y: 140, width: 240, height: 180 },
-        },
-        {
-          id: 'vdet-2',
-          frameNumber: 75,
-          timestampSeconds: 2.5,
-          type: 'alligator_crack',
-          confidence: 0.88,
-          severity: 'sedang',
-          bbox: { x: 200, y: 180, width: 280, height: 220 },
-        },
-      ],
-      totalFrames: 120,
-      fps: 30,
-      summary: {
-        totalDamageCount: 2,
-        typesFound: ['pothole', 'alligator_crack'],
-        averageConfidence: 0.91,
+// ========================
+// Sesi Inspeksi (survey_sessions)
+// ========================
+export async function createSurveySession(sessionData) {
+  const { data, error } = await supabase
+    .from('survey_sessions')
+    .insert([
+      {
+        session_name: sessionData.sessionName || `Sesi Inspeksi ${new Date().toLocaleDateString('id-ID')}`,
+        route_corridor: sessionData.routeCorridor || 'Jombang - Surabaya',
+        route_segment: sessionData.routeSegment || 'Jombang - Mojokerto',
+        camera_device: sessionData.cameraDevice || 'Kamera Smartphone (Real-Time Stream)',
+        gnss_device: sessionData.gnssDevice || 'Web Geolocation API (Browser GPS)',
+        total_distance_km: sessionData.totalDistanceKm || 0,
+        notes: sessionData.notes || 'Pengujian real-time Web GIS RoadSick',
       },
+    ])
+    .select()
+    .single();
+
+  if (error) throw new Error(`Gagal membuat sesi inspeksi: ${error.message}`);
+  return { success: true, data };
+}
+
+export async function getSurveySessions() {
+  const { data, error } = await supabase
+    .from('survey_sessions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error) throw new Error(`Gagal mengambil daftar sesi: ${error.message}`);
+  return { success: true, data: data || [] };
+}
+
+// ========================
+// Penyimpanan & Pengambilan Deteksi (road_damages)
+// ========================
+export async function uploadDamageImage(file) {
+  const fileName = `${Date.now()}-${file.name}`;
+  const { error } = await supabase.storage
+    .from('damage-images')
+    .upload(fileName, file, { contentType: file.type || 'image/jpeg' });
+
+  if (error) throw new Error(`Gagal upload foto bukti: ${error.message}`);
+
+  const { data: urlData } = supabase.storage
+    .from('damage-images')
+    .getPublicUrl(fileName);
+
+  return urlData?.publicUrl || '';
+}
+
+export async function saveDetection(detectionPayload) {
+  const normalizedType = normalizeDamageType(
+    detectionPayload.type || detectionPayload.damage_type
+  );
+  const dbSeverity = severityToDbValue(detectionPayload.severity || 'sedang');
+
+  const row = {
+    session_id: detectionPayload.sessionId || null,
+    damage_type: normalizedType,
+    confidence: Number(detectionPayload.confidence || 0.85),
+    severity: dbSeverity,
+    bbox: detectionPayload.bbox || null,
+    image_url: detectionPayload.imageUrl || detectionPayload.image_url || null,
+    captured_at:
+      detectionPayload.capturedAt ||
+      detectionPayload.timestamp ||
+      new Date().toISOString(),
+    latitude: Number(detectionPayload.latitude),
+    longitude: Number(detectionPayload.longitude),
+    road_name: detectionPayload.roadName || null,
+    route_segment: detectionPayload.routeSegment || 'Jombang - Surabaya',
+    status: 'terdeteksi',
+  };
+
+  const { data, error } = await supabase
+    .from('road_damages')
+    .insert([row])
+    .select()
+    .single();
+
+  if (error) {
+    if (error.message?.includes('invalid input value for enum damage_class_enum')) {
+      throw new Error(
+        `Nilai enum "${normalizedType}" belum tersedia di database Supabase. Jalankan file supabase/schema.sql (ALTER TYPE damage_class_enum ADD VALUE IF NOT EXISTS 'pothole') di Supabase SQL Editor.`
+      );
+    }
+    throw new Error(`Gagal menyimpan hasil deteksi: ${error.message}`);
+  }
+
+  return {
+    success: true,
+    data,
+    message: 'Data kerusakan jalan berhasil disimpan ke Supabase.',
+  };
+}
+
+export function mapDamageRow(d) {
+  const normalizedType = normalizeDamageType(d.damage_type);
+  const normalizedSev = normalizeSeverity(d.severity);
+
+  return {
+    id: d.id,
+    sessionId: d.session_id,
+    type: normalizedType,
+    rawType: d.damage_type,
+    confidence: d.confidence,
+    severity: normalizedSev,
+    rawSeverity: d.severity,
+    bbox: d.bbox,
+    coordinates: {
+      lat: d.latitude,
+      lng: d.longitude,
+    },
+    position: [d.latitude, d.longitude],
+    location: d.road_name || d.route_segment || 'Koridor Jombang – Surabaya',
+    roadName: d.road_name,
+    route_segment: d.route_segment || 'Jombang - Surabaya',
+    timestamp: d.captured_at || d.created_at,
+    imageUrl: d.image_url,
+    status: d.status || 'terdeteksi',
+    mode: 'realtime',
+  };
+}
+
+export async function getAllDetections(filters = {}) {
+  let query = supabase
+    .from('road_damages')
+    .select('*')
+    .order('captured_at', { ascending: false });
+
+  if (filters.dateRange?.start) {
+    query = query.gte('captured_at', filters.dateRange.start);
+  }
+  if (filters.dateRange?.end) {
+    query = query.lte('captured_at', filters.dateRange.end);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(`Gagal mengambil data deteksi: ${error.message}`);
+
+  let mapped = (data || []).map(mapDamageRow);
+
+  if (filters.type && filters.type !== 'all') {
+    if (Array.isArray(filters.type)) {
+      mapped = mapped.filter((m) => filters.type.includes(m.type));
+    } else {
+      mapped = mapped.filter((m) => m.type === filters.type);
+    }
+  }
+
+  if (filters.severity && filters.severity !== 'all') {
+    const targetSev = normalizeSeverity(filters.severity);
+    mapped = mapped.filter((m) => m.severity === targetSev);
+  }
+
+  if (filters.route_segment && filters.route_segment !== 'all') {
+    mapped = mapped.filter(
+      (m) =>
+        m.route_segment &&
+        m.route_segment.toLowerCase().includes(filters.route_segment.toLowerCase())
+    );
+  }
+
+  return { success: true, data: mapped, total: mapped.length };
+}
+
+// ========================
+// Dashboard Analytics
+// ========================
+export async function getDashboardStats() {
+  const { data: damages, error } = await supabase
+    .from('road_damages')
+    .select(
+      'id, damage_type, severity, route_segment, road_name, latitude, longitude, confidence, image_url, created_at, captured_at'
+    )
+    .order('captured_at', { ascending: false });
+
+  if (error) throw new Error(`Gagal mengambil statistik dashboard: ${error.message}`);
+
+  const byType = {
+    pothole: 0,
+    rutting: 0,
+    alligator_crack: 0,
+    longitudinal_crack: 0,
+  };
+  const bySeverity = {
+    high: 0,
+    medium: 0,
+    low: 0,
+  };
+  const bySegment = {};
+  let confSum = 0;
+
+  for (const d of damages || []) {
+    const t = normalizeDamageType(d.damage_type);
+    byType[t] = (byType[t] || 0) + 1;
+
+    const s = normalizeSeverity(d.severity);
+    bySeverity[s] = (bySeverity[s] || 0) + 1;
+
+    if (d.route_segment) {
+      bySegment[d.route_segment] = (bySegment[d.route_segment] || 0) + 1;
+    }
+
+    confSum += Number(d.confidence || 0);
+  }
+
+  // Tren 6 bulan terakhir
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+  ];
+  const monthlyMap = {};
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const mName = months[d.getMonth()];
+    monthlyMap[mName] = {
+      month: mName,
+      pothole: 0,
+      rutting: 0,
+      alligator_crack: 0,
+      longitudinal_crack: 0,
+      total: 0,
+    };
+  }
+
+  for (const d of damages || []) {
+    const date = new Date(d.captured_at || d.created_at || now);
+    const mName = months[date.getMonth()];
+    if (monthlyMap[mName]) {
+      const type = normalizeDamageType(d.damage_type);
+      monthlyMap[mName][type] = (monthlyMap[mName][type] || 0) + 1;
+      monthlyMap[mName].total += 1;
+    }
+  }
+
+  const totalCount = (damages || []).length;
+  const averageConfidence = totalCount > 0 ? +(confSum / totalCount).toFixed(3) : 0;
+
+  return {
+    success: true,
+    data: {
+      totalDetections: totalCount,
+      averageConfidence,
+      byType,
+      bySeverity,
+      bySegment,
+      monthlyTrend: Object.values(monthlyMap),
+      recentDetections: (damages || []).slice(0, 10).map(mapDamageRow),
     },
   };
 }
 
-/**
- * Start realtime detection (placeholder)
- */
+// ========================
+// Web GIS Map Markers
+// ========================
+export async function getMapMarkers(filters = {}) {
+  const result = await getAllDetections(filters);
+  const markers = result.data.map((det) => ({
+    ...det,
+    title: det.location || det.roadName,
+    locationName: det.location,
+  }));
+
+  return { success: true, data: markers };
+}
+
+// ========================
+// Real-Time Object Detection Stream (YOLO Backend)
+// ========================
 export async function startRealtimeDetection() {
+  const apiUrl = getYoloApiUrl();
+  try {
+    const res = await fetch(`${apiUrl}/api/detect/realtime/start`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+  } catch {
+    // Tetap lanjutkan inisialisasi sesi lokal apabila backend startup endpoint opsional
+  }
+
   return {
     success: true,
     data: {
-      sessionId: `session-${Date.now()}`,
+      session_id: `rt-session-${Date.now()}`,
       status: 'active',
       startedAt: new Date().toISOString(),
     },
@@ -710,26 +358,91 @@ export async function startRealtimeDetection() {
 }
 
 /**
- * Get realtime frame (placeholder)
- */
-export async function getRealtimeFrame() {
-  return { detection: null };
-}
-
-/**
- * Export data
- * @param {string} format
+ * Mengirim 1 frame kamera (base64 JPEG) ke backend YOLO Real-Time Detection API.
+ * Tidak melakukan fallback ke data deteksi palsu jika backend mati agar data penelitian tetap valid.
+ *
+ * @param {string} imageBase64 - Data URL / Base64 JPEG
+ * @param {number} conf - Confidence threshold (0.1 - 0.9)
+ * @param {number} imgsz - Ukuran input inferensi (default 640 atau 1280)
  * @returns {Promise<Object>}
  */
+export async function processRealtimeFrame(imageBase64, conf = 0.25, imgsz = 640) {
+  const apiUrl = getYoloApiUrl();
+  const candidates = [];
+  if (apiUrl) candidates.push(`${apiUrl}/api/detect/realtime/frame`);
+  candidates.push('/api/detect/realtime/frame');
+  if (!candidates.includes('http://localhost:8000/api/detect/realtime/frame')) {
+    candidates.push('http://localhost:8000/api/detect/realtime/frame');
+  }
+
+  let lastError = null;
+  for (const url of candidates) {
+    try {
+      const t0 = performance.now();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_base64: imageBase64,
+          conf,
+          imgsz,
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const roundTripMs = Math.round(performance.now() - t0);
+        const procMs = result.processing_time_ms || roundTripMs;
+        const detections = (result.detections || []).map((d) => ({
+          ...d,
+          type: normalizeDamageType(d.type || d.class || d.raw_class),
+          severity: normalizeSeverity(d.severity),
+        }));
+
+        return {
+          success: true,
+          connected: true,
+          data: {
+            detections,
+            processingTimeMs: procMs,
+            roundTripMs,
+            fps: procMs > 0 ? Number((1000 / procMs).toFixed(1)) : 30.0,
+            imgWidth: result.img_width || 640,
+            imgHeight: result.img_height || 360,
+            model: result.model || 'YOLO Nano Best',
+          },
+        };
+      }
+      lastError = new Error(`Backend merespons status ${res.status}`);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  return {
+    success: false,
+    connected: false,
+    error: lastError?.message || 'Server YOLO Python tidak terjangkau.',
+    data: {
+      detections: [],
+      processingTimeMs: 0,
+      roundTripMs: 0,
+      fps: 0,
+    },
+  };
+}
+
+// ========================
+// Export Data Helper
+// ========================
 export async function exportData(format = 'csv') {
   return {
     success: true,
     data: {
-      downloadUrl: '#',
       format,
-      filename: `roadsick-export-${Date.now()}.${format}`,
+      filename: `roadsick-jombang-surabaya-${Date.now()}.${format}`,
       exportedAt: new Date().toISOString(),
     },
-    message: `Ekspor data format ${format.toUpperCase()} berhasil disiapkan.`,
+    message: `Ekspor data format ${format.toUpperCase()} siap diunduh.`,
   };
 }

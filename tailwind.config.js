@@ -8,12 +8,11 @@ export default {
     extend: {
       colors: {
         pothole: '#EF4444',
-        'longitudinal-crack': '#F97316',
-        'alligator-crack': '#EAB308',
-        rutting: '#3B82F6',
-        patches: '#22C55E',
+        rutting: '#8B5CF6',
+        'alligator-crack': '#EA580C',
+        'longitudinal-crack': '#F59E0B',
       },
     },
   },
   plugins: [],
-}
+};

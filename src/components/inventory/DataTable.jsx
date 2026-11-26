@@ -8,28 +8,18 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import {
-  Search,
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  Radio,
-  Video,
-  Camera,
   MapPin,
-  Calendar,
-  Layers,
   LayoutGrid,
   Table as TableIcon,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Badge from '../common/Badge';
 import { formatCoordinate, formatTimestamp, formatConfidence } from '../../utils/formatters';
-import { DAMAGE_TYPES } from '../../data/damageTypes';
-
-const defaultModeIcons = {
-  realtime: { icon: Radio, label: 'Real-time' },
-  video: { icon: Video, label: 'Video' },
-  image: { icon: Camera, label: 'Image' },
-};
+import { getDamageTypeConfig } from '../../data/damageTypes';
+import { SEVERITY_LEVELS, normalizeSeverity } from '../../utils/constants';
 
 const DataTable = ({
   data = [],
@@ -41,30 +31,24 @@ const DataTable = ({
   const [globalFilter, setGlobalFilter] = useState('');
   const [viewMode, setViewMode] = useState('auto'); // 'auto' | 'cards' | 'table'
 
-  // Default Column Definitions
   const defaultColumns = useMemo(
     () => [
       {
         id: 'no',
         header: 'No',
-        cell: (info) => info.row.index + 1,
-        enableSorting: false,
-      },
-      {
-        accessorKey: 'id',
-        header: 'ID',
         cell: (info) => (
-          <span className="font-mono font-bold text-blue-600">
-            {info.getValue()}
+          <span className="text-slate-400 font-mono text-[11px]">
+            {info.row.index + 1}
           </span>
         ),
+        enableSorting: false,
       },
       {
         accessorKey: 'type',
         header: 'Jenis Kerusakan',
         cell: (info) => {
           const type = info.getValue();
-          const config = DAMAGE_TYPES[type] || { label: type };
+          const config = getDamageTypeConfig(type);
           return (
             <Badge variant={type} showIcon>
               {config.label}
@@ -73,64 +57,42 @@ const DataTable = ({
         },
       },
       {
-        id: 'coordinates',
-        header: 'Koordinat',
-        accessorFn: (row) => {
-          if (row.coordinates?.system) {
-            return `${row.coordinates.system.lat}, ${row.coordinates.system.lng}`;
-          }
-          if (Array.isArray(row.coordinates)) {
-            return `${row.coordinates[0]}, ${row.coordinates[1]}`;
-          }
-          if (row.coordinates?.lat !== undefined) {
-            return `${row.coordinates.lat}, ${row.coordinates.lng}`;
-          }
-          return '-';
-        },
+        accessorKey: 'severity',
+        header: 'Keparahan',
         cell: (info) => {
-          const row = info.row.original;
-          let lat = null;
-          let lng = null;
-          if (row.coordinates?.system) {
-            lat = row.coordinates.system.lat;
-            lng = row.coordinates.system.lng;
-          } else if (Array.isArray(row.coordinates)) {
-            lat = row.coordinates[0];
-            lng = row.coordinates[1];
-          } else if (row.coordinates?.lat !== undefined) {
-            lat = row.coordinates.lat;
-            lng = row.coordinates.lng;
-          }
-          if (lat === null || lng === null) return '-';
+          const norm = normalizeSeverity(info.getValue());
           return (
-            <span className="font-mono text-slate-600 text-[11px]">
-              {formatCoordinate(lat, 5)}, {formatCoordinate(lng, 5)}
-            </span>
+            <Badge variant={norm}>
+              {SEVERITY_LEVELS[norm]?.shortLabel || norm}
+            </Badge>
           );
         },
       },
       {
         id: 'location',
-        header: 'Lokasi Jalan',
+        header: 'Segmen / Lokasi',
         accessorFn: (row) =>
-          row.location || row.locationName || row.roadName || 'Koridor Surabaya – Mojokerto – Jombang',
+          row.route_segment || row.location || row.roadName || 'Jombang – Surabaya',
         cell: (info) => (
-          <span className="font-semibold text-slate-800">
-            {info.getValue()}
-          </span>
+          <span className="font-semibold text-slate-800">{info.getValue()}</span>
         ),
       },
       {
-        accessorKey: 'mode',
-        header: 'Mode',
+        id: 'coordinates',
+        header: 'Koordinat GPS',
+        accessorFn: (row) => {
+          const lat = row.coordinates?.lat ?? row.coordinates?.system?.lat;
+          const lng = row.coordinates?.lng ?? row.coordinates?.system?.lng;
+          return lat != null && lng != null ? `${lat}, ${lng}` : '-';
+        },
         cell: (info) => {
-          const mode = info.getValue() || 'image';
-          const infoObj = defaultModeIcons[mode] || { icon: Camera, label: mode };
-          const Icon = infoObj.icon;
+          const row = info.row.original;
+          const lat = row.coordinates?.lat ?? row.coordinates?.system?.lat;
+          const lng = row.coordinates?.lng ?? row.coordinates?.system?.lng;
+          if (lat == null || lng == null) return '-';
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg">
-              <Icon className="w-3.5 h-3.5 text-slate-500" />
-              <span className="capitalize text-[11px] font-medium">{infoObj.label}</span>
+            <span className="font-mono text-slate-600 text-[11px]">
+              {formatCoordinate(lat, 5)}, {formatCoordinate(lng, 5)}
             </span>
           );
         },
@@ -146,16 +108,16 @@ const DataTable = ({
               <div className="w-12 bg-slate-100 rounded-full h-1.5 overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
-                    percent >= 90
+                    percent >= 85
                       ? 'bg-emerald-500'
-                      : percent >= 80
+                      : percent >= 70
                       ? 'bg-blue-500'
                       : 'bg-amber-500'
                   }`}
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <span className="font-bold text-slate-700 text-xs">
+              <span className="font-bold text-slate-700 text-xs font-mono">
                 {formatConfidence(val)}
               </span>
             </div>
@@ -164,12 +126,32 @@ const DataTable = ({
       },
       {
         accessorKey: 'timestamp',
-        header: 'Waktu',
+        header: 'Waktu Deteksi',
         cell: (info) => (
           <span className="text-slate-500 whitespace-nowrap text-[11px]">
             {formatTimestamp(info.getValue())}
           </span>
         ),
+      },
+      {
+        id: 'evidence',
+        header: 'Bukti',
+        enableSorting: false,
+        cell: (info) => {
+          const hasImage = Boolean(info.row.original.imageUrl);
+          return (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg ${
+                hasImage
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'bg-slate-100 text-slate-400'
+              }`}
+            >
+              <ImageIcon className="w-3 h-3" />
+              <span>{hasImage ? 'Foto' : '-'}</span>
+            </span>
+          );
+        },
       },
     ],
     []
@@ -201,30 +183,24 @@ const DataTable = ({
   const { pageIndex, pageSize } = table.getState().pagination;
   const startRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
-
   const paginatedRows = table.getRowModel().rows;
 
   return (
-    <div
-      className={`bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden ${className}`}
-    >
-      {/* Table / Card Header Controls */}
+    <div className={`bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden ${className}`}>
       <div className="p-3 sm:p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
         <span className="text-xs font-bold text-slate-700">
-          Menampilkan {startRow} - {endRow} dari {totalRows} Data Kerusakan
+          Menampilkan {startRow}–{endRow} dari {totalRows} Data Deteksi
         </span>
 
-        {/* View Toggle on Mobile */}
         <div className="flex items-center gap-1 bg-slate-200/60 p-0.5 rounded-xl text-xs">
           <button
             type="button"
             onClick={() => setViewMode('cards')}
-            className={`p-1.5 rounded-lg flex items-center gap-1 transition-all ${
-              viewMode === 'cards' || (viewMode === 'auto' && window.innerWidth < 768)
+            className={`p-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+              viewMode === 'cards'
                 ? 'bg-white text-blue-600 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
-            title="Tampilan Kartu (Mobile)"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
             <span className="text-[10px]">Kartu</span>
@@ -232,12 +208,11 @@ const DataTable = ({
           <button
             type="button"
             onClick={() => setViewMode('table')}
-            className={`p-1.5 rounded-lg flex items-center gap-1 transition-all ${
-              viewMode === 'table' || (viewMode === 'auto' && window.innerWidth >= 768)
+            className={`p-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+              viewMode === 'table' || viewMode === 'auto'
                 ? 'bg-white text-blue-600 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
-            title="Tampilan Tabel"
           >
             <TableIcon className="w-3.5 h-3.5" />
             <span className="text-[10px]">Tabel</span>
@@ -245,7 +220,7 @@ const DataTable = ({
         </div>
       </div>
 
-      {/* 1. MOBILE CARDS VIEW */}
+      {/* MOBILE CARDS VIEW */}
       <div
         className={`${
           viewMode === 'table'
@@ -257,17 +232,14 @@ const DataTable = ({
       >
         {paginatedRows.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400">
-            Tidak ada data yang cocok dengan kriteria
+            Tidak ada data riwayat deteksi yang cocok.
           </div>
         ) : (
           paginatedRows.map((row) => {
             const item = row.original;
-            const typeConfig = DAMAGE_TYPES[item.type] || {
-              label: item.type,
-              color: '#3B82F6',
-            };
-            const mode = item.mode || 'image';
-            const ModeIcon = defaultModeIcons[mode]?.icon || Camera;
+            const typeConfig = getDamageTypeConfig(item.type);
+            const lat = item.coordinates?.lat ?? item.coordinates?.system?.lat;
+            const lng = item.coordinates?.lng ?? item.coordinates?.system?.lng;
 
             return (
               <div
@@ -275,19 +247,19 @@ const DataTable = ({
                 onClick={() => onRowClick && onRowClick(item)}
                 className="p-3.5 space-y-2 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <Badge variant={item.type} showIcon>
                     {typeConfig.label}
                   </Badge>
-                  <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    {item.id}
-                  </span>
+                  <Badge variant={item.severity}>
+                    {SEVERITY_LEVELS[item.severity]?.shortLabel || item.severity}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-slate-800 font-bold">
                   <span className="flex items-center gap-1.5 truncate">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    {item.location || item.roadName || 'Koridor Surabaya – Mojokerto – Jombang'}
+                    {item.route_segment || item.location || 'Jombang – Surabaya'}
                   </span>
                   <span className="text-emerald-600 font-mono text-[11px]">
                     {formatConfidence(item.confidence)}
@@ -296,15 +268,12 @@ const DataTable = ({
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1 border-t border-slate-100">
                   <span>
-                    {item.coordinates?.system
-                      ? `${item.coordinates.system.lat.toFixed(5)}, ${item.coordinates.system.lng.toFixed(5)}`
-                      : Array.isArray(item.coordinates)
-                      ? `${item.coordinates[0].toFixed(5)}, ${item.coordinates[1].toFixed(5)}`
+                    {lat != null && lng != null
+                      ? `${formatCoordinate(lat, 5)}, ${formatCoordinate(lng, 5)}`
                       : '-'}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-sans">
-                    <ModeIcon className="w-3 h-3 text-slate-500" />
-                    <span className="capitalize">{mode}</span>
+                  <span className="text-[10px] text-slate-400 font-sans">
+                    {formatTimestamp(item.timestamp)}
                   </span>
                 </div>
               </div>
@@ -313,7 +282,7 @@ const DataTable = ({
         )}
       </div>
 
-      {/* 2. DESKTOP / EXPLICIT TABLE VIEW */}
+      {/* DESKTOP TABLE VIEW */}
       <div
         className={`${
           viewMode === 'cards'
@@ -330,7 +299,6 @@ const DataTable = ({
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sortDirection = header.column.getIsSorted();
-
                   return (
                     <th
                       key={header.id}
@@ -342,10 +310,7 @@ const DataTable = ({
                     >
                       <div className="flex items-center gap-1.5">
                         <span>
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          {flexRender(header.column.columnDef.header, header.getContext())}
                         </span>
                         {canSort && (
                           <span className="text-slate-400">
@@ -368,11 +333,8 @@ const DataTable = ({
           <tbody className="divide-y divide-slate-100 bg-white">
             {paginatedRows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-10 text-center text-slate-400"
-                >
-                  Tidak ada data yang ditemukan.
+                <td colSpan={columns.length} className="px-4 py-10 text-center text-slate-400">
+                  Tidak ada data riwayat deteksi yang ditemukan.
                 </td>
               </tr>
             ) : (
@@ -395,7 +357,7 @@ const DataTable = ({
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-3 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 bg-slate-50/50">
+      <div className="p-3 sm:p-4 border-t border-slate-100 flex items-center justify-between gap-3 text-xs text-slate-600 bg-slate-50/50">
         <div className="text-[11px] text-slate-500">
           Halaman <span className="font-bold">{pageIndex + 1}</span> dari{' '}
           <span className="font-bold">{table.getPageCount() || 1}</span>
@@ -406,7 +368,7 @@ const DataTable = ({
             type="button"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors active:scale-95"
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Halaman Sebelumnya"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -415,7 +377,7 @@ const DataTable = ({
             type="button"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors active:scale-95"
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Halaman Berikutnya"
           >
             <ChevronRight className="w-4 h-4" />

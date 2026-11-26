@@ -1,14 +1,9 @@
 import React from 'react';
-import { DAMAGE_TYPES } from '../../data/damageTypes';
+import { getDamageTypeConfig } from '../../data/damageTypes';
 
 /**
  * DamageLabel
- * Badge component for displaying damage type with icon, label, and confidence score.
- *
- * @param {string} type - Key in DAMAGE_TYPES ('pothole', 'longitudinal_crack', etc.)
- * @param {number} confidence - Confidence score 0 - 1
- * @param {'sm'|'md'|'lg'} size - Badge size
- * @param {boolean} showConfidence - Whether to show the percentage badge
+ * Badge untuk menampilkan 1 dari 4 kelas kerusakan resmi beserta skor keyakinan.
  */
 const DamageLabel = ({
   type,
@@ -17,12 +12,7 @@ const DamageLabel = ({
   showConfidence = false,
   className = '',
 }) => {
-  const damage = DAMAGE_TYPES[type] || {
-    label: type || 'Unknown',
-    labelId: 'Tidak Diketahui',
-    color: '#6B7280',
-    icon: '⚠️',
-  };
+  const damage = getDamageTypeConfig(type);
 
   const sizeClasses = {
     sm: 'text-xs px-2 py-0.5 gap-1.5',
@@ -32,7 +22,7 @@ const DamageLabel = ({
 
   return (
     <span
-      className={`inline-flex items-center rounded-md font-medium border transition-colors shadow-2xs ${
+      className={`inline-flex items-center rounded-lg font-semibold border transition-colors ${
         sizeClasses[size] || sizeClasses.md
       } ${className}`}
       style={{
@@ -52,7 +42,7 @@ const DamageLabel = ({
             color: damage.color,
           }}
         >
-          {(confidence * 100).toFixed(0)}%
+          {((confidence <= 1 ? confidence * 100 : confidence)).toFixed(0)}%
         </span>
       )}
     </span>

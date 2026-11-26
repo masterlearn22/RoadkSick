@@ -1,10 +1,7 @@
-import * as realApi from './api';
-import * as mockApi from './mockApi';
 import * as supabaseApi from './supabaseService';
+import * as mockApi from './mockApi';
 
-// Determine which service to use:
-// 1. VITE_USE_MOCK=true -> mockApi (hanya jika eksplisit diaktifkan)
-// 2. Default -> supabaseApi (terhubung langsung ke Supabase Cloud)
+// Default selalu terhubung ke Supabase Cloud Live
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 const supabaseUrl =
@@ -19,38 +16,25 @@ const hasSupabaseCredentials =
   Boolean(supabaseAnonKey) &&
   supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY';
 
-let service;
-if (USE_MOCK) {
-  service = mockApi;
-} else if (hasSupabaseCredentials) {
-  service = supabaseApi;
-} else {
-  console.warn('Supabase credentials belum diisi, fallback ke mockApi');
-  service = mockApi;
-}
+const service = !USE_MOCK && hasSupabaseCredentials ? supabaseApi : mockApi;
 
 export { USE_MOCK, service };
 
 export const {
-  processImageDetection,
-  processVideoDetection,
   startRealtimeDetection,
-  getRealtimeFrame,
+  processRealtimeFrame,
   getAllDetections,
   getDashboardStats,
   getMapMarkers,
-  getSurveyTracks,
-  getRMSEData,
   saveDetection,
-  updateGroundTruth,
   exportData,
 } = service;
 
-// Re-export Supabase-specific functions that may not exist in mock
 export const createSurveySession = supabaseApi.createSurveySession;
-export const uploadGNSSLog = supabaseApi.uploadGNSSLog;
+export const getSurveySessions = supabaseApi.getSurveySessions;
 export const uploadDamageImage = supabaseApi.uploadDamageImage;
-export const upsertGroundTruth = supabaseApi.upsertGroundTruth;
 export const getYoloApiUrl = supabaseApi.getYoloApiUrl;
+export const setYoloApiUrl = supabaseApi.setYoloApiUrl;
+export const getBackendModelInfo = supabaseApi.getBackendModelInfo;
 
 export default service;

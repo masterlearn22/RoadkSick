@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   const isHttps =
     process.env.npm_lifecycle_event === 'dev:mobile' ||
     process.env.npm_lifecycle_event === 'dev:https' ||
